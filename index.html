@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compiler Design — Modules 6 & 7</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf9f6;
+    --surface: #ffffff;
+    --surface2: #f4f1eb;
+    --border: #e2ddd4;
+    --accent: #c0392b;
+    --accent2: #2471a3;
+    --accent3: #1e8449;
+    --accent4: #d68910;
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+    --mnemonic: #7d3c98;
+    --mnemonic-bg: #f5eef8;
+    --callout-info: #eaf4fb;
+    --callout-warn: #fef9e7;
+    --callout-tip: #eafaf1;
+    --callout-exam: #fdedec;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 1rem;
+    box-shadow: var(--shadow);
+  }
+  .nav-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.6rem 0;
+    scrollbar-width: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-brand {
+    font-family: 'Lora', serif;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 1rem;
+    white-space: nowrap;
+    margin-right: 0.5rem;
+  }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  nav a:hover { background: var(--surface2); color: var(--text); }
+
+  /* LAYOUT */
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #2c3e50 0%, #c0392b 100%);
+    color: white;
+    padding: 3rem 1rem 2.5rem;
+    text-align: center;
+  }
+  .hero h1 { font-family: 'Lora', serif; font-size: clamp(1.6rem, 5vw, 2.8rem); margin-bottom: 0.5rem; }
+  .hero p { font-size: 1rem; opacity: 0.85; max-width: 600px; margin: 0 auto; }
+  .badge-row { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+  .badge { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 0.25rem 0.75rem; font-size: 0.78rem; font-weight: 700; }
+
+  /* SECTIONS */
+  .section { margin-top: 3rem; }
+  .section-title {
+    font-family: 'Lora', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-num { background: var(--accent); color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+
+  h3 { font-family: 'Lora', serif; font-size: 1.2rem; color: var(--accent2); margin: 1.8rem 0 0.7rem; }
+  h4 { font-weight: 800; color: var(--text); margin: 1.2rem 0 0.4rem; font-size: 1rem; }
+  p { margin-bottom: 0.8rem; }
+  ul, ol { padding-left: 1.4rem; margin-bottom: 0.8rem; }
+  li { margin-bottom: 0.3rem; }
+  strong { color: var(--text); }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1.2rem;
+    box-shadow: var(--shadow);
+  }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.2rem; }
+
+  /* CALLOUTS */
+  .callout {
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    border-left: 4px solid;
+    font-size: 0.95rem;
+  }
+  .callout-title { font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+  .info { background: var(--callout-info); border-color: var(--accent2); }
+  .info .callout-title { color: var(--accent2); }
+  .warn { background: var(--callout-warn); border-color: var(--accent4); }
+  .warn .callout-title { color: var(--accent4); }
+  .tip { background: var(--callout-tip); border-color: var(--accent3); }
+  .tip .callout-title { color: var(--accent3); }
+  .exam-q { background: var(--callout-exam); border-color: var(--accent); }
+  .exam-q .callout-title { color: var(--accent); }
+
+  /* MNEMONIC */
+  .mnemonic {
+    background: var(--mnemonic-bg);
+    border: 2px dashed var(--mnemonic);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+  }
+  .mnemonic-title { font-weight: 800; color: var(--mnemonic); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+  .mnemonic-word { font-size: 1.4rem; font-weight: 800; color: var(--mnemonic); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
+
+  /* CODE */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin: 1rem 0;
+  }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: #eee; padding: 0.1em 0.35em; border-radius: 4px; color: var(--accent); }
+  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+  /* SVG DIAGRAMS */
+  .diagram-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin: 1.2rem 0;
+    overflow-x: auto;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .diagram-caption { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic; text-align: center; }
+  svg { max-width: 100%; height: auto; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: 10px; box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 0.88rem; }
+  th { background: #2c3e50; color: white; padding: 0.6rem 0.9rem; text-align: left; font-weight: 700; }
+  td { padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: var(--surface2); }
+
+  /* QA */
+  .qa-block { margin-bottom: 1.5rem; }
+  .qa-q {
+    background: #2c3e50;
+    color: white;
+    padding: 0.9rem 1.2rem;
+    border-radius: 10px 10px 0 0;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .qa-q .marks { background: var(--accent); border-radius: 20px; padding: 0.1rem 0.6rem; font-size: 0.78rem; margin-left: 0.5rem; }
+  .qa-a {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 1rem 1.2rem;
+    border-radius: 0 0 10px 10px;
+    font-size: 0.92rem;
+  }
+
+  /* TOC */
+  .toc {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 2rem;
+  }
+  .toc-title { font-weight: 800; font-size: 1rem; margin-bottom: 0.8rem; color: var(--accent); }
+  .toc ol { margin: 0; }
+  .toc li { margin-bottom: 0.2rem; }
+  .toc a { color: var(--accent2); text-decoration: none; font-size: 0.9rem; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* PIPELINE */
+  .pipeline { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin: 1rem 0; }
+  .pipe-step {
+    background: var(--accent2);
+    color: white;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+  }
+  .pipe-arrow { color: var(--text-muted); font-size: 1.2rem; font-weight: 700; }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin: 1rem 0;
+  }
+  .highlight-box h4 { color: #f39c12; margin-top: 0; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0.3rem; margin-bottom: 0; flex-wrap: wrap; }
+  .tab-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-family: 'Nunito', sans-serif;
+    transition: all 0.2s;
+    border-bottom: none;
+  }
+  .tab-btn.active { background: var(--surface); color: var(--accent2); border-color: var(--border); }
+  .tab-content { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 0 8px 8px 8px; padding: 1.2rem; margin-bottom: 1rem; }
+  .tab-content.active { display: block; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .section-title { font-size: 1.4rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .pipeline { flex-direction: column; align-items: flex-start; }
+    .pipe-arrow { transform: rotate(90deg); }
+    pre { font-size: 0.75rem; }
+  }
+
+  /* SCROLL REVEAL */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .section { animation: fadeUp 0.5s ease both; }
+
+  /* FOOTER */
+  footer { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 3rem; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>📚 Compiler Design</h1>
+  <p>Modules 6 & 7 — Code Generation, Runtime, and Parallelism</p>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-brand">Compiler Design</span>
+    <a href="#module6">Module 6</a>
+    <a href="#module7">Module 7</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- ==================== MODULE 6 ==================== -->
+  <div id="module6" class="section">
+    <div class="section-title">
+      <div class="section-num">6</div>
+      Module 6: Code Generation
+    </div>
+
+    <p>Code generation is the <strong>final phase</strong> of compilation. The compiler takes the optimized intermediate representation (IR) and translates it into target machine code. Think of it like a translator converting English text (IR) into a local dialect (machine code) as efficiently as possible.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 700 90" xmlns="http://www.w3.org/2000/svg" width="700">
+        <!-- pipeline -->
+        <rect x="5" y="20" width="110" height="50" rx="8" fill="#2c3e50"/>
+        <text x="60" y="43" text-anchor="middle" fill="white" font-size="11" font-family="Nunito,sans-serif" font-weight="700">Source Code</text>
+        <text x="60" y="58" text-anchor="middle" fill="#aaa" font-size="10" font-family="Nunito,sans-serif">(.c, .java...)</text>
+        <polygon points="115,45 128,37 128,53" fill="#e74c3c"/>
+        <rect x="130" y="20" width="110" height="50" rx="8" fill="#2471a3"/>
+        <text x="185" y="43" text-anchor="middle" fill="white" font-size="11" font-family="Nunito,sans-serif" font-weight="700">Front End</text>
+        <text x="185" y="58" text-anchor="middle" fill="#aaa" font-size="10" font-family="Nunito,sans-serif">Lex, Parse, Sem</text>
+        <polygon points="240,45 253,37 253,53" fill="#e74c3c"/>
+        <rect x="255" y="20" width="110" height="50" rx="8" fill="#2471a3"/>
+        <text x="310" y="43" text-anchor="middle" fill="white" font-size="11" font-family="Nunito,sans-serif" font-weight="700">Optimizer</text>
+        <text x="310" y="58" text-anchor="middle" fill="#aaa" font-size="10" font-family="Nunito,sans-serif">IR → IR'</text>
+        <polygon points="365,45 378,37 378,53" fill="#e74c3c"/>
+        <rect x="380" y="10" width="130" height="70" rx="8" fill="#c0392b" stroke="#e74c3c" stroke-width="2"/>
+        <text x="445" y="43" text-anchor="middle" fill="white" font-size="11" font-family="Nunito,sans-serif" font-weight="700">Code Generator</text>
+        <text x="445" y="58" text-anchor="middle" fill="#f8c6c0" font-size="10" font-family="Nunito,sans-serif">← YOU ARE HERE</text>
+        <polygon points="510,45 523,37 523,53" fill="#e74c3c"/>
+        <rect x="525" y="20" width="120" height="50" rx="8" fill="#1e8449"/>
+        <text x="585" y="43" text-anchor="middle" fill="white" font-size="11" font-family="Nunito,sans-serif" font-weight="700">Machine Code</text>
+        <text x="585" y="58" text-anchor="middle" fill="#aaa" font-size="10" font-family="Nunito,sans-serif">(.exe, .o, .asm)</text>
+      </svg>
+      <div class="diagram-caption">Compiler pipeline — Code Generator is the final translation step</div>
+    </div>
+  </div>
+
+  <!-- ISSUES IN CODE GEN -->
+  <div id="code-gen-issues" class="section">
+    <h3>1. Issues in the Design of a Code Generator</h3>
+
+    <p>A code generator must solve several challenging problems simultaneously. The overarching constraint is <strong>correctness first</strong> — wrong-but-fast code is useless.</p>
+
+    <div class="mnemonic">
+      <div class="mnemonic-title">🧠 Mnemonic — Remember the 5 Issues</div>
+      <div class="mnemonic-word">I T R E O</div>
+      <p style="margin-top:0.5rem"><strong>I</strong>nput (IR format) · <strong>T</strong>arget program (architecture) · <strong>R</strong>egister allocation · <strong>E</strong>valuation order · <strong>O</strong>ptimal code generation</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>1. Input to Code Generator</h4>
+        <p>The code generator receives the <strong>IR (Intermediate Representation)</strong> + the <strong>symbol table</strong>. Common IRs:</p>
+        <ul>
+          <li><strong>Three-address code:</strong> <code>x = y op z</code></li>
+          <li><strong>DAG (Directed Acyclic Graph)</strong></li>
+          <li><strong>Bytecode / stack machine code</strong></li>
+        </ul>
+        <p>By this stage, all type-checking, semantic errors, and type conversions are done.</p>
+      </div>
+      <div class="card">
+        <h4>2. Target Program</h4>
+        <p>The output can be:</p>
+        <ul>
+          <li><strong>Absolute machine code</strong> — directly executable, fixed memory location</li>
+          <li><strong>Relocatable object code</strong> — linked later, compiled separately</li>
+          <li><strong>Assembly code</strong> — human-readable, then assembled</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>3. Register Allocation</h4>
+        <p>Registers are the <em>fastest</em> but <em>fewest</em> resources. Deciding <strong>which values stay in registers</strong> vs memory is NP-complete in the general case.</p>
+      </div>
+      <div class="card">
+        <h4>4. Evaluation Order</h4>
+        <p>The order of computing operations affects how many temporary registers are needed. Bad ordering → more spills to memory.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TARGET MACHINE -->
+  <div id="target-machine" class="section">
+    <h3>2. Target Machine Architectures</h3>
+
+    <p>Understanding the target architecture is crucial because the same program generates very different code on different machines.</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab(this,'risc')">RISC</button>
+      <button class="tab-btn" onclick="showTab(this,'cisc')">CISC</button>
+      <button class="tab-btn" onclick="showTab(this,'stack')">Stack-Based</button>
+    </div>
+    <div id="risc" class="tab-content active">
+      <h4>RISC — Reduced Instruction Set Computer</h4>
+      <ul>
+        <li><strong>Many registers</strong> (typically 32+)</li>
+        <li>All instructions are <strong>3-address</strong>: <code>ADD R1, R2, R3</code> means R1 = R2 + R3</li>
+        <li><strong>Simple addressing modes</strong></li>
+        <li>Fixed-length instructions (e.g., 32 bits)</li>
+        <li>Examples: ARM, MIPS, RISC-V</li>
+      </ul>
+      <pre><code># RISC: a = b + c
+LD  R1, b       ; Load b into R1
+LD  R2, c       ; Load c into R2
+ADD R3, R1, R2  ; R3 = R1 + R2
+ST  a, R3       ; Store result to a</code></pre>
+    </div>
+    <div id="cisc" class="tab-content">
+      <h4>CISC — Complex Instruction Set Computer</h4>
+      <ul>
+        <li><strong>Few registers</strong>, but instructions can access memory directly</li>
+        <li><strong>2-address instructions</strong>: destination is also a source</li>
+        <li>Variable-length instructions</li>
+        <li>Examples: x86, x86-64</li>
+      </ul>
+      <pre><code>; CISC (x86): a = b + c
+MOV EAX, b    ; EAX = b
+ADD EAX, c    ; EAX = EAX + c  (memory operand allowed!)
+MOV a, EAX   ; a = EAX</code></pre>
+    </div>
+    <div id="stack" class="tab-content">
+      <h4>Stack-Based Machine</h4>
+      <ul>
+        <li>Operations work on a <strong>stack</strong> — push operands, operation pops and pushes result</li>
+        <li>No explicit register names needed</li>
+        <li>Java Virtual Machine (JVM) is a famous example</li>
+      </ul>
+      <pre><code>// Stack: a = b + c
+PUSH b   ; stack: [b]
+PUSH c   ; stack: [b, c]
+IADD     ; pops b,c, pushes (b+c): stack: [b+c]
+POP a    ; a = b+c</code></pre>
+    </div>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg" width="680">
+        <text x="340" y="22" text-anchor="middle" font-family="Lora,serif" font-size="15" font-weight="700" fill="#2c3e50">Target Machine Comparison</text>
+        <!-- headers -->
+        <rect x="10" y="35" width="200" height="30" fill="#2c3e50" rx="5"/>
+        <rect x="215" y="35" width="215" height="30" fill="#2471a3" rx="5"/>
+        <rect x="435" y="35" width="235" height="30" fill="#1e8449" rx="5"/>
+        <text x="110" y="55" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">Property</text>
+        <text x="322" y="55" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">RISC</text>
+        <text x="552" y="55" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">CISC</text>
+        <!-- rows -->
+        <g font-family="Nunito,sans-serif" font-size="11">
+          <rect x="10" y="65" width="660" height="26" fill="#f4f1eb"/>
+          <text x="20" y="82" fill="#2c3e50" font-weight="700">Registers</text>
+          <text x="215" y="82" fill="#2c3e50">Many (32+)</text>
+          <text x="435" y="82" fill="#2c3e50">Few (8–16)</text>
+          <rect x="10" y="91" width="660" height="26" fill="#fff"/>
+          <text x="20" y="108" fill="#2c3e50" font-weight="700">Instruction format</text>
+          <text x="215" y="108" fill="#2c3e50">Fixed-length (32-bit)</text>
+          <text x="435" y="108" fill="#2c3e50">Variable-length</text>
+          <rect x="10" y="117" width="660" height="26" fill="#f4f1eb"/>
+          <text x="20" y="134" fill="#2c3e50" font-weight="700">Addressing modes</text>
+          <text x="215" y="134" fill="#2c3e50">Simple (reg+offset)</text>
+          <text x="435" y="134" fill="#2c3e50">Many complex modes</text>
+          <rect x="10" y="143" width="660" height="26" fill="#fff"/>
+          <text x="20" y="160" fill="#2c3e50" font-weight="700">Memory access</text>
+          <text x="215" y="160" fill="#2c3e50">Load/Store only</text>
+          <text x="435" y="160" fill="#2c3e50">Ops on memory</text>
+          <rect x="10" y="169" width="660" height="26" fill="#f4f1eb"/>
+          <text x="20" y="186" fill="#2c3e50" font-weight="700">Examples</text>
+          <text x="215" y="186" fill="#2c3e50">ARM, MIPS, RISC-V</text>
+          <text x="435" y="186" fill="#2c3e50">x86, x86-64</text>
+        </g>
+        <!-- borders -->
+        <rect x="10" y="35" width="660" height="160" fill="none" stroke="#ccc" rx="5"/>
+        <line x1="210" y1="35" x2="210" y2="195" stroke="#ccc"/>
+        <line x1="430" y1="35" x2="430" y2="195" stroke="#ccc"/>
+      </svg>
+    </div>
+
+    <h4>Instruction Selection Example</h4>
+    <p>Given three-address code: <code>a = b + c</code>, the code generator must pick the right instructions. If the machine has an <strong>INC</strong> instruction and the code is <code>a = a + 1</code>, using <code>INC a</code> is far better than <code>LOAD R, a / ADD R, #1 / STORE a, R</code>.</p>
+
+    <div class="callout info">
+      <div class="callout-title">💡 Intuition — Instruction Selection</div>
+      Think of it like a restaurant order: the IR says "one egg dish." But the target machine (restaurant) might have a specialized "sunny-side-up" shortcut that's faster. The code generator looks for these shortcuts (machine idioms).
+    </div>
+  </div>
+
+  <!-- NEXT-USE INFORMATION -->
+  <div id="next-use" class="section">
+    <h3>3. Next-Use Information</h3>
+
+    <p>Before generating code, the compiler needs to know: <em>"After this instruction, will this variable be used again?"</em> This is called <strong>Next-Use Information</strong> (also called <em>liveness</em>).</p>
+
+    <div class="callout info">
+      <div class="callout-title">💡 Intuition — Why Next-Use Matters</div>
+      Imagine you're writing on a whiteboard (= registers). If you won't need what's written again, you can erase it (free the register). If you will need it, keep it! Next-use info tells the code generator when it's <em>safe to free a register</em>.
+    </div>
+
+    <h4>Algorithm: Computing Next-Use</h4>
+    <p>Scan each basic block <strong>backwards</strong> (from last instruction to first):</p>
+    <ol>
+      <li>Initially, all variables are "dead" (no next-use).</li>
+      <li>When you see an assignment <code>x = y op z</code>:
+        <ul>
+          <li>Record the current next-use info for x, y, z</li>
+          <li>Mark x as <strong>dead</strong> (it was just defined)</li>
+          <li>Mark y, z as <strong>live</strong> (they were just used)</li>
+        </ul>
+      </li>
+    </ol>
+
+    <div class="card">
+      <h4>Example</h4>
+      <pre><code>Statement   | Variable a | Variable b | Variable c
+-----------+------------+------------+------------
+(1) a = b+c | dead (def) | use at 1   | use at 1
+(2) d = a-b | live@2     | dead (def) | live@1
+(3) e = b+c | dead       | use@2,3    | use@1,3
+
+Scanning backwards from (3) to (1) tells us:
+After stmt 1: a is live (used in stmt 2), b is live (used in stmt 3)</code></pre>
+    </div>
+    <p>This lets the register allocator know: if <code>a</code> won't be used after statement 3, we don't need to keep it in a register — we can <strong>spill</strong> it to memory or just drop it.</p>
+  </div>
+
+  <!-- REGISTER ALLOCATION -->
+  <div id="register" class="section">
+    <h3>4. Register Allocation and Assignment</h3>
+
+    <p>Registers are the <strong>fastest</strong> but <strong>most limited</strong> resource. Register allocation is one of the hardest problems in compilation.</p>
+
+    <div class="highlight-box">
+      <h4>Two Sub-Problems</h4>
+      <p><strong>Register Allocation</strong> — Decide <em>which variables</em> get to live in registers at each program point.</p>
+      <p><strong>Register Assignment</strong> — Decide <em>which specific register</em> (R1, R2, R3...) each variable gets.</p>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">⚠️ Complexity Alert</div>
+      Optimal register allocation is <strong>NP-complete</strong> in the general case. Compilers use heuristics and graph coloring approximations.
+    </div>
+
+    <h4>Graph Coloring for Register Allocation</h4>
+    <p>This is the most important technique. The idea maps beautifully to a graph-coloring puzzle:</p>
+
+    <ol>
+      <li><strong>Build a Register Interference Graph (RIG)</strong>
+        <ul>
+          <li>Each <em>variable</em> = a node in the graph</li>
+          <li>An <em>edge</em> between two variables = they are <strong>simultaneously live</strong> (both needed at the same time)</li>
+        </ul>
+      </li>
+      <li><strong>Color the graph</strong> with k colors, where k = number of physical registers</li>
+      <li>Two adjacent nodes (variables that interfere) <strong>cannot share a color (register)</strong></li>
+      <li>If k colors suffice → no spilling needed. If not → some variable must be <strong>spilled to memory</strong></li>
+    </ol>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 500 260" xmlns="http://www.w3.org/2000/svg" width="500">
+        <text x="250" y="22" text-anchor="middle" font-family="Lora,serif" font-size="14" font-weight="700" fill="#2c3e50">Register Interference Graph → Coloring</text>
+        <!-- LEFT: RIG -->
+        <text x="110" y="50" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" fill="#666">Interference Graph</text>
+        <!-- nodes -->
+        <circle cx="110" cy="100" r="24" fill="#e8f4fd" stroke="#2471a3" stroke-width="2"/>
+        <text x="110" y="105" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="13" fill="#2471a3">a</text>
+        <circle cx="60" cy="175" r="24" fill="#e8f4fd" stroke="#2471a3" stroke-width="2"/>
+        <text x="60" y="180" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="13" fill="#2471a3">b</text>
+        <circle cx="160" cy="175" r="24" fill="#e8f4fd" stroke="#2471a3" stroke-width="2"/>
+        <text x="160" y="180" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="13" fill="#2471a3">c</text>
+        <circle cx="110" cy="235" r="24" fill="#e8f4fd" stroke="#2471a3" stroke-width="2"/>
+        <text x="110" y="240" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="13" fill="#2471a3">d</text>
+        <!-- edges -->
+        <line x1="110" y1="124" x2="80" y2="153" stroke="#999" stroke-width="2"/>
+        <line x1="110" y1="124" x2="140" y2="153" stroke="#999" stroke-width="2"/>
+        <line x1="60" y1="199" x2="100" y2="213" stroke="#999" stroke-width="2"/>
+        <line x1="160" y1="199" x2="120" y2="213" stroke="#999" stroke-width="2"/>
+        <line x1="83" y1="175" x2="137" y2="175" stroke="#999" stroke-width="2"/>
+        <!-- arrow -->
+        <text x="230" y="155" text-anchor="middle" font-size="28" fill="#c0392b">→</text>
+        <!-- RIGHT: Colored -->
+        <text x="370" y="50" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" fill="#666">Colored (k=3 registers)</text>
+        <circle cx="370" cy="100" r="24" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+        <text x="370" y="98" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="11" fill="white">a</text>
+        <text x="370" y="110" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="white">R1</text>
+        <circle cx="320" cy="175" r="24" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+        <text x="320" y="173" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="11" fill="white">b</text>
+        <text x="320" y="185" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="white">R2</text>
+        <circle cx="420" cy="175" r="24" fill="#2471a3" stroke="#1a5276" stroke-width="2"/>
+        <text x="420" y="173" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="11" fill="white">c</text>
+        <text x="420" y="185" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="white">R3</text>
+        <circle cx="370" cy="235" r="24" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+        <text x="370" y="233" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="11" fill="white">d</text>
+        <text x="370" y="245" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="white">R1</text>
+        <!-- edges right -->
+        <line x1="370" y1="124" x2="340" y2="153" stroke="#999" stroke-width="2"/>
+        <line x1="370" y1="124" x2="400" y2="153" stroke="#999" stroke-width="2"/>
+        <line x1="320" y1="199" x2="350" y2="213" stroke="#999" stroke-width="2"/>
+        <line x1="420" y1="199" x2="390" y2="213" stroke="#999" stroke-width="2"/>
+        <line x1="343" y1="175" x2="397" y2="175" stroke="#999" stroke-width="2"/>
+      </svg>
+      <div class="diagram-caption">a and d don't interfere → they can share R1! b→R2, c→R3. Only 3 registers needed.</div>
+    </div>
+
+    <h4>Register Spilling</h4>
+    <p>When there are more simultaneously live variables than registers, one variable must be <strong>spilled</strong> — stored in memory. The compiler inserts <code>STORE</code> and <code>LOAD</code> instructions around the spill point. Spilling is expensive, so the compiler tries to spill the variable that's <em>used least frequently</em>.</p>
+
+    <h4>Global Register Allocation (Loop-Level)</h4>
+    <p>For loops (where programs spend most time), it's worth keeping frequently-used variables in registers for the <strong>entire loop duration</strong>. The compiler computes a <strong>usage count</strong>:</p>
+    <pre><code>Savings(x, loop L) = Σ [use(x, B) + 2 × live(x, B)]  for all blocks B in L</code></pre>
+    <p>Variables with the highest savings scores get registers first.</p>
+  </div>
+
+  <!-- EVAL ORDER -->
+  <div id="eval-order" class="section">
+    <h3>5. Evaluation Order & Code Generation</h3>
+
+    <div class="qa-block">
+      <div class="qa-q">
+        Q: When instructions are independent, is it possible to change evaluation order during code generation? Justify with example.
+        <span class="marks">5 Marks</span>
+      </div>
+      <div class="qa-a">
+        <p><strong>Yes</strong> — when instructions are <em>independent</em> (no data dependency between them), the compiler can freely reorder them to improve efficiency. This is safe because the final result doesn't change.</p>
+        
+        <h4>Why Reordering Helps</h4>
+        <p>Different orderings may require different numbers of temporary registers, reducing register pressure and avoiding memory spills.</p>
+
+        <h4>Example</h4>
+        <p>Consider: <code>a = b + c; d = e * f; g = a - d</code></p>
+        <p>Statements 1 and 2 are <strong>independent</strong> (neither reads the other's output). The compiler can reorder them.</p>
+
+        <pre><code>Original order:           Reordered (may be better):
+1. t1 = b + c             1. t1 = e * f   (MUL is slow - start early!)
+2. a = t1                 2. t2 = b + c
+3. t2 = e * f             3. a = t2
+4. d = t2                 4. d = t1
+5. g = a - d              5. g = a - d</code></pre>
+
+        <p>The reordered version can overlap the multiply (slow) with the add (fast) on a pipelined CPU — effectively hiding the multiply latency.</p>
+
+        <div class="callout tip">
+          <div class="callout-title">✅ Key Rule</div>
+          Reordering is safe only when there is <strong>no data dependency</strong> between instructions. A dependency exists when one instruction reads the result of another.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RUNTIME -->
+  <div id="runtime" class="section">
+    <h3>6. Runtime Organization</h3>
+
+    <p>Runtime organization is how the compiler <em>manages memory</em> while the compiled program is executing. Think of it as city planning — different zones (code, stack, heap, static data) are organized into a logical memory map.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg" width="300">
+        <text x="150" y="20" text-anchor="middle" font-family="Lora,serif" font-size="14" font-weight="700" fill="#2c3e50">Runtime Memory Layout</text>
+        <!-- memory blocks -->
+        <rect x="40" y="35" width="220" height="50" fill="#2c3e50" rx="5"/>
+        <text x="150" y="57" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">Code (Text) Segment</text>
+        <text x="150" y="72" text-anchor="middle" fill="#aaa" font-family="Nunito,sans-serif" font-size="10">Compiled machine instructions</text>
+
+        <rect x="40" y="90" width="220" height="45" fill="#2471a3" rx="5"/>
+        <text x="150" y="109" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">Static Data</text>
+        <text x="150" y="124" text-anchor="middle" fill="#aaa" font-family="Nunito,sans-serif" font-size="10">Global variables, constants</text>
+
+        <rect x="40" y="140" width="220" height="60" fill="#1e8449" rx="5"/>
+        <text x="150" y="162" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">Stack ↓ grows down</text>
+        <text x="150" y="178" text-anchor="middle" fill="#aaa" font-family="Nunito,sans-serif" font-size="10">Function calls, local variables</text>
+        <text x="150" y="192" text-anchor="middle" fill="#aaa" font-family="Nunito,sans-serif" font-size="10">Activation records (frames)</text>
+
+        <rect x="40" y="210" width="220" height="30" fill="#e8e8e8" rx="5"/>
+        <text x="150" y="230" text-anchor="middle" fill="#999" font-family="Nunito,sans-serif" font-size="11">Free space</text>
+
+        <rect x="40" y="250" width="220" height="60" fill="#c0392b" rx="5"/>
+        <text x="150" y="272" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">Heap ↑ grows up</text>
+        <text x="150" y="288" text-anchor="middle" fill="#aaa" font-family="Nunito,sans-serif" font-size="10">Dynamic allocation: malloc/new</text>
+        <text x="150" y="302" text-anchor="middle" fill="#aaa" font-family="Nunito,sans-serif" font-size="10">Garbage collected in Java/Python</text>
+
+        <!-- address labels -->
+        <text x="18" y="42" font-family="JetBrains Mono,monospace" font-size="9" fill="#999">High</text>
+        <text x="18" y="308" font-family="JetBrains Mono,monospace" font-size="9" fill="#999">Low</text>
+        <!-- arrow -->
+        <line x1="32" y1="35" x2="32" y2="310" stroke="#ccc" stroke-width="1"/>
+        <polygon points="32,35 28,45 36,45" fill="#ccc"/>
+      </svg>
+      <div class="diagram-caption">Program memory layout during execution</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">
+        Q: Specify two or more roles of runtime organization in the code generation phase.
+        <span class="marks">5 Marks</span>
+      </div>
+      <div class="qa-a">
+        <p>Runtime organization plays several critical roles during code generation:</p>
+        <ol>
+          <li><strong>Storage Allocation &amp; Layout:</strong> The compiler must decide how to allocate memory for variables. <em>Static allocation</em> (global/static vars at fixed addresses) is decided at compile time. <em>Stack allocation</em> (locals, parameters) uses push/pop at runtime. <em>Heap allocation</em> is for dynamically created objects.</li>
+          
+          <li><strong>Procedure Call Linkage:</strong> Runtime organization defines how function calls work — how parameters are passed, how return values come back, how the return address is stored, and how local variables are accessed. The compiler generates code that sets up and tears down activation records following the calling convention.</li>
+
+          <li><strong>Variable Access Mechanism:</strong> The compiler generates address-computation code based on where variables live. A local variable <code>x</code> might be accessed as <code>offset_from_frame_pointer</code> (e.g., <code>-8(fp)</code>), while a global is accessed via its absolute address.</li>
+
+          <li><strong>Interface to OS &amp; I/O:</strong> Runtime organization includes how the program interacts with the operating system for I/O operations, system calls, and exception handling.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVATION RECORDS -->
+  <div id="activation" class="section">
+    <h3>7. Activation Records (Stack Frames)</h3>
+
+    <p>Every time a function is called, the runtime creates a block of memory on the stack called an <strong>Activation Record</strong> (or <em>stack frame</em>). This stores everything the function needs while it runs.</p>
+
+    <div class="mnemonic">
+      <div class="mnemonic-title">🧠 Mnemonic — Contents of an Activation Record</div>
+      <div class="mnemonic-word">RLTAPS</div>
+      <p style="margin-top:0.5rem"><strong>R</strong>eturn value · <strong>L</strong>ink (return address) · <strong>T</strong>emporaries · <strong>A</strong>ctual parameters · <strong>P</strong>ointers (control/access links) · <strong>S</strong>aved registers &amp; local state</p>
+    </div>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 480 340" xmlns="http://www.w3.org/2000/svg" width="480">
+        <text x="240" y="20" text-anchor="middle" font-family="Lora,serif" font-size="14" font-weight="700" fill="#2c3e50">Activation Record Layout</text>
+        
+        <rect x="100" y="35" width="200" height="35" fill="#7d3c98" rx="0"/>
+        <text x="200" y="57" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Return Value</text>
+        
+        <rect x="100" y="70" width="200" height="35" fill="#2471a3" rx="0"/>
+        <text x="200" y="92" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Actual Parameters</text>
+
+        <rect x="100" y="105" width="200" height="35" fill="#2471a3" rx="0"/>
+        <text x="200" y="127" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Control Link (caller's frame ptr)</text>
+
+        <rect x="100" y="140" width="200" height="35" fill="#2471a3" rx="0"/>
+        <text x="200" y="162" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Access Link (non-local data)</text>
+
+        <rect x="100" y="175" width="200" height="35" fill="#c0392b" rx="0"/>
+        <text x="200" y="192" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Return Address</text>
+        <text x="200" y="205" text-anchor="middle" fill="#f8c6c0" font-family="Nunito,sans-serif" font-size="9">where to go after return</text>
+
+        <rect x="100" y="210" width="200" height="35" fill="#1e8449" rx="0"/>
+        <text x="200" y="232" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Saved Registers</text>
+
+        <rect x="100" y="245" width="200" height="35" fill="#1e8449" rx="0"/>
+        <text x="200" y="262" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Local Variables</text>
+        <text x="200" y="275" text-anchor="middle" fill="#aaffaa" font-family="Nunito,sans-serif" font-size="9">int x, char c, etc.</text>
+
+        <rect x="100" y="280" width="200" height="35" fill="#1e8449" rx="0"/>
+        <text x="200" y="302" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Temporaries</text>
+        
+        <!-- FP indicator -->
+        <line x1="305" y1="192" x2="350" y2="192" stroke="#c0392b" stroke-width="2"/>
+        <text x="355" y="196" font-family="Nunito,sans-serif" font-size="11" fill="#c0392b" font-weight="700">← Frame Pointer (fp)</text>
+        
+        <!-- Stack grows down -->
+        <text x="55" y="60" font-family="Nunito,sans-serif" font-size="10" fill="#999">← High</text>
+        <text x="55" y="310" font-family="Nunito,sans-serif" font-size="10" fill="#999">← Low</text>
+        <text x="66" y="175" font-family="Nunito,sans-serif" font-size="9" fill="#999" transform="rotate(-90,66,175)">Stack grows ↓</text>
+      </svg>
+      <div class="diagram-caption">The activation record (stack frame) stores everything a function needs to run</div>
+    </div>
+
+    <h4>Activation Trees</h4>
+    <p>The sequence of function calls forms a <strong>tree structure</strong> — the Activation Tree. Each node is a call to a function. The path from root to the currently executing node corresponds to the current call stack.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 480 200" xmlns="http://www.w3.org/2000/svg" width="480">
+        <text x="240" y="20" text-anchor="middle" font-family="Lora,serif" font-size="13" font-weight="700" fill="#2c3e50">Activation Tree for fact(4)</text>
+        <!-- main -->
+        <rect x="190" y="35" width="100" height="32" rx="8" fill="#2c3e50"/>
+        <text x="240" y="56" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">main()</text>
+        <!-- fact 4 -->
+        <line x1="240" y1="67" x2="240" y2="85" stroke="#666" stroke-width="2"/>
+        <rect x="188" y="85" width="104" height="32" rx="8" fill="#2471a3"/>
+        <text x="240" y="106" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">fact(4)</text>
+        <!-- fact 3 -->
+        <line x1="240" y1="117" x2="200" y2="135" stroke="#666" stroke-width="2"/>
+        <rect x="150" y="135" width="100" height="32" rx="8" fill="#1e8449"/>
+        <text x="200" y="156" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">fact(3)</text>
+        <!-- fact 2 -->
+        <line x1="200" y1="167" x2="170" y2="178" stroke="#666" stroke-width="2"/>
+        <rect x="110" y="172" width="100" height="28" rx="8" fill="#c0392b"/>
+        <text x="160" y="191" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="12">fact(2) → …</text>
+        <!-- stack depiction -->
+        <text x="370" y="55" font-family="Nunito,sans-serif" font-size="10" fill="#666">Call Stack</text>
+        <rect x="330" y="65" width="120" height="22" fill="#2c3e50" rx="3"/>
+        <text x="390" y="80" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="10">main frame</text>
+        <rect x="330" y="87" width="120" height="22" fill="#2471a3" rx="3"/>
+        <text x="390" y="102" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="10">fact(4) frame</text>
+        <rect x="330" y="109" width="120" height="22" fill="#1e8449" rx="3"/>
+        <text x="390" y="124" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="10">fact(3) frame</text>
+        <rect x="330" y="131" width="120" height="22" fill="#c0392b" rx="3"/>
+        <text x="390" y="146" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="10">fact(2) frame ← top</text>
+      </svg>
+      <div class="diagram-caption">Each function call pushes a frame; return pops it. Activation tree = the structure of calls.</div>
+    </div>
+  </div>
+
+  <!-- ==================== MODULE 7 ==================== -->
+  <div id="module7" class="section">
+    <div class="section-title">
+      <div class="section-num">7</div>
+      Module 7: Parallelism
+    </div>
+    <p>Modern computers don't run one instruction at a time — they do many things simultaneously. Module 7 covers how compilers exploit this, from automatic parallelization to vector processing and software pipelining.</p>
+  </div>
+
+  <!-- TYPES OF PARALLELISM -->
+  <div id="parallelism" class="section">
+    <h3>1. Types of Parallelism</h3>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 650 220" xmlns="http://www.w3.org/2000/svg" width="650">
+        <text x="325" y="22" text-anchor="middle" font-family="Lora,serif" font-size="14" font-weight="700" fill="#2c3e50">Flynn's Taxonomy of Parallel Architectures</text>
+        
+        <!-- SISD -->
+        <rect x="10" y="40" width="145" height="160" rx="8" fill="#f4f1eb" stroke="#ccc"/>
+        <text x="82" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="11" fill="#2c3e50">SISD</text>
+        <text x="82" y="74" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#666">Single Instr, Single Data</text>
+        <rect x="50" y="85" width="60" height="20" rx="4" fill="#2c3e50"/>
+        <text x="80" y="99" text-anchor="middle" fill="white" font-family="JetBrains Mono,monospace" font-size="9">ADD R1,R2</text>
+        <text x="80" y="120" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="#2c3e50">→</text>
+        <rect x="50" y="128" width="60" height="18" rx="4" fill="#e8e8e8" stroke="#ccc"/>
+        <text x="80" y="141" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#666">data[0]</text>
+        <text x="82" y="175" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="#c0392b" font-weight="700">Classic CPU</text>
+        <text x="82" y="190" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#666">Sequential processor</text>
+
+        <!-- SIMD -->
+        <rect x="165" y="40" width="145" height="160" rx="8" fill="#eaf4fb" stroke="#2471a3"/>
+        <text x="237" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="11" fill="#2471a3">SIMD</text>
+        <text x="237" y="74" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#666">Single Instr, Multi Data</text>
+        <rect x="187" y="85" width="100" height="20" rx="4" fill="#2471a3"/>
+        <text x="237" y="99" text-anchor="middle" fill="white" font-family="JetBrains Mono,monospace" font-size="9">VADD V1, V2</text>
+        <text x="237" y="118" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#2c3e50">operates on all at once:</text>
+        <rect x="175" y="125" width="25" height="16" rx="3" fill="#e8f4fd" stroke="#2471a3"/>
+        <text x="187" y="137" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#2471a3">a0</text>
+        <rect x="203" y="125" width="25" height="16" rx="3" fill="#e8f4fd" stroke="#2471a3"/>
+        <text x="215" y="137" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#2471a3">a1</text>
+        <rect x="231" y="125" width="25" height="16" rx="3" fill="#e8f4fd" stroke="#2471a3"/>
+        <text x="243" y="137" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#2471a3">a2</text>
+        <rect x="259" y="125" width="25" height="16" rx="3" fill="#e8f4fd" stroke="#2471a3"/>
+        <text x="271" y="137" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#2471a3">a3</text>
+        <text x="237" y="175" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="#c0392b" font-weight="700">GPU, SSE/AVX</text>
+        <text x="237" y="190" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#666">Vector processor</text>
+
+        <!-- MIMD -->
+        <rect x="320" y="40" width="145" height="160" rx="8" fill="#eafaf1" stroke="#1e8449"/>
+        <text x="392" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="11" fill="#1e8449">MIMD</text>
+        <text x="392" y="74" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#666">Multi Instr, Multi Data</text>
+        <rect x="330" y="85" width="70" height="18" rx="4" fill="#1e8449"/>
+        <text x="365" y="98" text-anchor="middle" fill="white" font-family="JetBrains Mono,monospace" font-size="8">Core 1: ADD</text>
+        <rect x="408" y="85" width="48" height="18" rx="4" fill="#1e8449"/>
+        <text x="432" y="98" text-anchor="middle" fill="white" font-family="JetBrains Mono,monospace" font-size="8">C2: MUL</text>
+        <rect x="330" y="110" width="70" height="18" rx="4" fill="#1e8449" opacity="0.7"/>
+        <text x="365" y="123" text-anchor="middle" fill="white" font-family="JetBrains Mono,monospace" font-size="8">Core 3: SUB</text>
+        <rect x="408" y="110" width="48" height="18" rx="4" fill="#1e8449" opacity="0.5"/>
+        <text x="432" y="123" text-anchor="middle" fill="white" font-family="JetBrains Mono,monospace" font-size="8">C4: JMP</text>
+        <text x="392" y="175" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="#c0392b" font-weight="700">Multi-core CPU</text>
+        <text x="392" y="190" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#666">Parallel threads</text>
+
+        <!-- MISD -->
+        <rect x="475" y="40" width="165" height="160" rx="8" fill="#fef9e7" stroke="#d68910"/>
+        <text x="557" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="11" fill="#d68910">MISD</text>
+        <text x="557" y="74" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#666">Multi Instr, Single Data</text>
+        <rect x="495" y="100" width="40" height="20" rx="4" fill="#d68910"/>
+        <text x="515" y="114" text-anchor="middle" fill="white" font-family="JetBrains Mono,monospace" font-size="8">FILTER</text>
+        <rect x="545" y="100" width="40" height="20" rx="4" fill="#d68910"/>
+        <text x="565" y="114" text-anchor="middle" fill="white" font-family="JetBrains Mono,monospace" font-size="8">ENCRYPT</text>
+        <rect x="595" y="100" width="32" height="20" rx="4" fill="#d68910"/>
+        <text x="611" y="114" text-anchor="middle" fill="white" font-family="JetBrains Mono,monospace" font-size="8">CRC</text>
+        <text x="557" y="140" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#666">Same data, diff ops</text>
+        <text x="557" y="175" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="#c0392b" font-weight="700">Rare / Pipelines</text>
+        <text x="557" y="190" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#666">Fault-tolerant systems</text>
+      </svg>
+      <div class="diagram-caption">Flynn's Taxonomy — the standard way to classify parallel architectures</div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>Instruction-Level Parallelism (ILP)</h4>
+        <p>Multiple <em>instructions</em> within the same program are executed in parallel. Examples:</p>
+        <ul>
+          <li><strong>Pipelining</strong> — fetch, decode, execute stages overlap</li>
+          <li><strong>Out-of-order execution</strong> — CPU reorders safe instructions</li>
+          <li><strong>Superscalar</strong> — multiple execution units</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Data Parallelism</h4>
+        <p>The same operation is applied to <em>many data elements</em> simultaneously. This is what <strong>vector processors</strong> and <strong>GPUs</strong> do. Array operations like <code>C[i] = A[i] + B[i]</code> are perfect candidates.</p>
+      </div>
+      <div class="card">
+        <h4>Task-Level Parallelism</h4>
+        <p>Different <em>tasks or threads</em> run concurrently on separate cores. Used in multi-core CPUs. Requires explicit programming with threads (pthreads, OpenMP) or automatic analysis.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTO PARALLELIZATION -->
+  <div id="auto-parallel" class="section">
+    <h3>2. Automatic Parallelization</h3>
+
+    <p>Automatic parallelization is when the <strong>compiler</strong> — not the programmer — converts sequential code into parallel code. This is difficult because the compiler must prove it's safe to run code in parallel.</p>
+
+    <div class="pipeline">
+      <div class="pipe-step">1. Parse</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">2. Analyze Dependencies</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">3. Schedule</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">4. Code Generation</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">Parallel Code</div>
+    </div>
+
+    <h4>Loop Parallelization — The Key Case</h4>
+    <p>Most parallelization happens in <strong>loops</strong>. A loop can be parallelized if its iterations are <em>independent</em> (no iteration depends on the result of a previous one).</p>
+
+    <pre><code>// PARALLELIZABLE — each iteration is independent
+for (int i = 0; i &lt; N; i++) {
+    A[i] = B[i] * C[i];   // A[0] doesn't depend on A[1] etc.
+}
+// Compiler can emit: #pragma omp parallel for
+
+// NOT PARALLELIZABLE — loop-carried dependency!
+for (int i = 1; i &lt; N; i++) {
+    A[i] = A[i-1] + 1;    // A[2] needs A[1], A[3] needs A[2]...
+                            // Can't run iterations in any order
+}</code></pre>
+
+    <div class="callout warn">
+      <div class="callout-title">⚠️ The Main Challenge — Data Dependence Analysis</div>
+      The compiler uses <strong>data dependence analysis</strong> to find loop-carried dependencies. If the loop body accesses arrays with indices that might alias or overlap, the compiler must be conservative and not parallelize.
+    </div>
+
+    <h4>Challenges with Irregular Data Structures</h4>
+    <p>Graphs and sparse matrices create <strong>irregular memory access patterns</strong>. The compiler can't statically determine which elements are accessed, making it nearly impossible to automatically parallelize. This is the topic of a major exam question:</p>
+
+    <div class="qa-block">
+      <div class="qa-q">
+        Q: Evaluate the effectiveness of Automatic Parallelization and Cache Locality Optimization in handling complex, real-world applications with irregular data structures (e.g., graphs, sparse matrices). Analyze the challenges compilers face.
+        <span class="marks">10 Marks</span>
+      </div>
+      <div class="qa-a">
+        <h4>Effectiveness on Regular Applications (6 marks)</h4>
+        <p>Automatic parallelization and cache locality optimization are <strong>highly effective</strong> for regular, structured computations:</p>
+        <ul>
+          <li><strong>Dense matrix operations</strong>: Matrix multiply has predictable access patterns. Compilers can apply loop tiling, interchange, and vectorization (SIMD) to achieve near-peak performance.</li>
+          <li><strong>Signal processing</strong>: FFT, convolution — regular stride access, easily vectorized.</li>
+          <li><strong>Embarrassingly parallel loops</strong>: Independent iterations → compiler auto-inserts OpenMP or vectorizes with SSE/AVX instructions.</li>
+        </ul>
+
+        <h4>Challenges with Irregular Data Structures (4 marks)</h4>
+        <p>Graphs and sparse matrices break all the assumptions that make automatic optimization possible:</p>
+        
+        <ol>
+          <li><strong>Unpredictable Memory Access:</strong> In a graph traversal (<code>for each neighbor v of u</code>), the memory locations accessed depend on the <em>input data</em>, not a compile-time formula. The compiler cannot compute offsets or predict cache behavior.
+          <pre><code>// Sparse Matrix-Vector: y[i] += val[j] * x[col[j]]
+// col[j] is data-dependent → can't know access pattern</code></pre>
+          </li>
+          <li><strong>Loop-Carried Dependencies:</strong> BFS/DFS on a graph has implicit data dependencies between iterations (e.g., the "visited" array). The compiler cannot prove iterations are independent.</li>
+          <li><strong>Aliasing:</strong> Pointer-based graph structures have aliasing — two pointers might reference the same node. The compiler cannot safely parallelize without alias analysis.</li>
+          <li><strong>Load Imbalance:</strong> Even if the compiler parallelizes (e.g., processes different nodes in parallel), nodes with many vs few neighbors create unequal workloads, defeating the speedup.</li>
+          <li><strong>Cache Locality Failure:</strong> Graph traversal follows edges randomly across memory, causing frequent cache misses. Loop tiling and blocking don't apply because there's no spatial locality.</li>
+        </ol>
+
+        <div class="callout tip">
+          <div class="callout-title">✅ Conclusion</div>
+          Automatic parallelization is effective for regular computations but largely fails for irregular structures. Real-world high-performance graph processing (like Google's Pregel, GraphX) requires <em>hand-crafted runtime systems</em>, not compiler automation. Compilers can help with <em>inspector-executor</em> techniques or <em>speculation-based parallelism</em>, but these are runtime approaches, not pure compile-time analysis.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CACHE LOCALITY & VECTORIZATION -->
+  <div id="cache" class="section">
+    <h3>3. Cache Locality Optimization &amp; Vectorization</h3>
+
+    <p>Modern CPUs are fast; memory is slow. The <strong>cache</strong> bridges this gap — but only if data accesses are <em>nearby in memory</em> (spatial locality) or <em>reused soon</em> (temporal locality).</p>
+
+    <div class="mnemonic">
+      <div class="mnemonic-title">🧠 Mnemonic — Cache Optimization Techniques</div>
+      <div class="mnemonic-word">TILUP</div>
+      <p style="margin-top:0.5rem"><strong>T</strong>iling/Blocking · <strong>I</strong>nterchange · <strong>L</strong>oop Unrolling · <strong>U</strong>nify (data alignment) · <strong>P</strong>refetching</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>🔲 Loop Tiling (Blocking)</h4>
+        <p>Divide the iteration space into tiles that <em>fit in cache</em>. Instead of sweeping all of a matrix row, process a small block completely before moving on.</p>
+        <pre><code>// Without tiling (poor cache use for B):
+for i: for j: for k:
+  C[i][j] += A[i][k] * B[k][j];
+
+// With tiling (B block stays in cache):
+for i0 by T: for j0 by T: for k0 by T:
+  for i=i0 to i0+T: for j=j0 to j0+T:
+    for k=k0 to k0+T:
+      C[i][j] += A[i][k] * B[k][j];</code></pre>
+      </div>
+      <div class="card">
+        <h4>🔄 Loop Interchange</h4>
+        <p>Swap the order of nested loops to improve spatial locality. In C/C++, 2D arrays are stored in <strong>row-major</strong> order — iterating over columns in the inner loop is bad!</p>
+        <pre><code>// BAD — column-major access (cache misses!)
+for (j=0; j&lt;N; j++)
+  for (i=0; i&lt;N; i++)
+    A[i][j] = ...;   // jumps N elements each step
+
+// GOOD — row-major access (sequential!)
+for (i=0; i&lt;N; i++)
+  for (j=0; j&lt;N; j++)
+    A[i][j] = ...;   // consecutive memory</code></pre>
+      </div>
+      <div class="card">
+        <h4>📦 Loop Unrolling</h4>
+        <p>Replicate the loop body multiple times, reducing loop control overhead and exposing more ILP.</p>
+        <pre><code>// Original:
+for i: A[i] = B[i] + C[i];
+
+// Unrolled by 4:
+for i by 4:
+  A[i]   = B[i]   + C[i];
+  A[i+1] = B[i+1] + C[i+1];
+  A[i+2] = B[i+2] + C[i+2];
+  A[i+3] = B[i+3] + C[i+3];
+// CPU can issue all 4 independently!</code></pre>
+      </div>
+      <div class="card">
+        <h4>🔧 Data Alignment &amp; Prefetching</h4>
+        <p><strong>Alignment</strong>: Place array data on cache-line boundaries so one fetch gets all elements of a SIMD register.</p>
+        <p><strong>Prefetching</strong>: Compiler inserts prefetch instructions to load cache lines <em>before</em> they're needed, hiding memory latency.</p>
+        <pre><code>// Compiler-inserted prefetch hint:
+__builtin_prefetch(&A[i+16], 0, 1);
+// Load A[i+16] into cache now,
+// so it's ready when we get there</code></pre>
+      </div>
+    </div>
+
+    <h3 id="scalar-vector">4. Scalar vs Vector Processors</h3>
+
+    <div class="qa-block">
+      <div class="qa-q">
+        Q: Analyse the difference between scalar processor and vector processor with respect to compiler design aspects. Illustrate with relevant examples.
+      </div>
+      <div class="qa-a">
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>Aspect</th>
+              <th>Scalar Processor</th>
+              <th>Vector Processor</th>
+            </tr>
+            <tr>
+              <td><strong>Basic Unit</strong></td>
+              <td>Operates on ONE element at a time</td>
+              <td>Operates on a VECTOR (array) of elements in one instruction</td>
+            </tr>
+            <tr>
+              <td><strong>Instruction Style</strong></td>
+              <td><code>ADD R1, R2, R3</code> — scalar add</td>
+              <td><code>VADD V1, V2, V3</code> — adds 4/8/16 elements at once</td>
+            </tr>
+            <tr>
+              <td><strong>Hardware</strong></td>
+              <td>Single ALU</td>
+              <td>Multiple functional units or SIMD lanes</td>
+            </tr>
+            <tr>
+              <td><strong>Compiler Strategy</strong></td>
+              <td>Generate one instruction per operation. Focus on register allocation, instruction scheduling.</td>
+              <td>Auto-vectorization: detect loop parallelism, pack data into vector registers, generate SIMD instructions.</td>
+            </tr>
+            <tr>
+              <td><strong>Loop Handling</strong></td>
+              <td>Loop runs N iterations sequentially</td>
+              <td>Loop runs N/width iterations (width = vector width, e.g., 8 for 256-bit AVX)</td>
+            </tr>
+            <tr>
+              <td><strong>Memory Access</strong></td>
+              <td>One load/store per element</td>
+              <td>Vector load: fetch 8 floats in one instruction</td>
+            </tr>
+            <tr>
+              <td><strong>Data Dependency</strong></td>
+              <td>Standard RAW/WAW/WAR checks</td>
+              <td>Must ensure NO aliasing across vector width (harder to verify)</td>
+            </tr>
+            <tr>
+              <td><strong>Examples</strong></td>
+              <td>Standard x86 integer ops, early RISC CPUs</td>
+              <td>Intel SSE/AVX, ARM NEON, GPU compute shaders</td>
+            </tr>
+          </table>
+        </div>
+
+        <h4>Concrete Code Example</h4>
+        <pre><code>// C source:
+for (int i = 0; i &lt; N; i++)
+    C[i] = A[i] + B[i];
+
+// Scalar code (x86):
+loop:
+  MOV EAX, [A + i*4]
+  ADD EAX, [B + i*4]
+  MOV [C + i*4], EAX
+  INC i; CMP i, N; JLT loop      // N iterations
+
+// Vector code (AVX, 256-bit = 8 floats at once):
+loop:
+  VMOVAPS YMM0, [A + i*4]   ; load 8 floats from A
+  VADDPS  YMM0, YMM0, [B+i*4] ; add 8 floats from B
+  VMOVAPS [C + i*4], YMM0   ; store 8 results
+  ADD i, 8; CMP i, N; JLT loop  // N/8 iterations!</code></pre>
+
+        <div class="callout tip">
+          <div class="callout-title">✅ Compiler Implication</div>
+          For a vector processor, the compiler's vectorizer must: (1) detect the loop is parallelizable, (2) check alignment, (3) handle the remainder (N mod 8), (4) choose the right SIMD instruction set. This is far more complex than scalar code generation.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTRUCTION SCHEDULING & SOFTWARE PIPELINING -->
+  <div id="scheduling" class="section">
+    <h3>5. Instruction Scheduling &amp; Software Pipelining</h3>
+
+    <p>Even with a single thread, instructions take different numbers of clock cycles. A <strong>divide</strong> might take 20+ cycles; an <strong>add</strong> takes 1. If the next instruction needs the divide result, the CPU stalls. Instruction scheduling avoids these stalls.</p>
+
+    <div class="callout info">
+      <div class="callout-title">💡 Intuition — The Traffic Jam Analogy</div>
+      Think of instructions as cars at a traffic light. If a slow truck (divide) blocks the fast cars behind it, everyone stalls. Instruction scheduling is like building an extra lane — route the fast cars around the truck while it crawls through.
+    </div>
+
+    <h4>Instruction Scheduling</h4>
+    <p>The compiler reorders instructions (within the constraints of data dependencies) to <em>fill pipeline stalls</em> with useful work.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 620 240" xmlns="http://www.w3.org/2000/svg" width="620">
+        <text x="310" y="20" text-anchor="middle" font-family="Lora,serif" font-size="13" font-weight="700" fill="#2c3e50">Before vs After Instruction Scheduling</text>
+        
+        <!-- Before -->
+        <text x="150" y="45" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="12" fill="#c0392b">Before (5 stall cycles)</text>
+        <g font-family="JetBrains Mono,monospace" font-size="10">
+          <rect x="20" y="55" width="250" height="22" fill="#2c3e50" rx="3"/>
+          <text x="145" y="70" text-anchor="middle" fill="white">LOAD R1, 100(R2)   ; 3 cycles</text>
+          <rect x="20" y="80" width="250" height="22" fill="#c0392b" rx="3"/>
+          <text x="145" y="95" text-anchor="middle" fill="white">⚠ STALL (wait for R1)...</text>
+          <rect x="20" y="105" width="250" height="22" fill="#c0392b" rx="3"/>
+          <text x="145" y="120" text-anchor="middle" fill="white">⚠ STALL</text>
+          <rect x="20" y="130" width="250" height="22" fill="#1e8449" rx="3"/>
+          <text x="145" y="145" text-anchor="middle" fill="white">ADD R3, R1, R4     ; uses R1</text>
+          <rect x="20" y="155" width="250" height="22" fill="#2c3e50" rx="3"/>
+          <text x="145" y="170" text-anchor="middle" fill="white">STORE R3, 200(R2)</text>
+          <rect x="20" y="180" width="250" height="22" fill="#2c3e50" rx="3"/>
+          <text x="145" y="195" text-anchor="middle" fill="white">LOAD R5, 300(R2)</text>
+        </g>
+        <text x="145" y="225" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="#c0392b" font-weight="700">Total: 6 instrs + 2 stalls = 8 cycles</text>
+        
+        <!-- After -->
+        <text x="460" y="45" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="12" fill="#1e8449">After (0 stall cycles)</text>
+        <g font-family="JetBrains Mono,monospace" font-size="10">
+          <rect x="330" y="55" width="250" height="22" fill="#2c3e50" rx="3"/>
+          <text x="455" y="70" text-anchor="middle" fill="white">LOAD R1, 100(R2)   ; starts</text>
+          <rect x="330" y="80" width="250" height="22" fill="#2c3e50" rx="3"/>
+          <text x="455" y="95" text-anchor="middle" fill="white">LOAD R5, 300(R2)   ; moved up!</text>
+          <rect x="330" y="105" width="250" height="22" fill="#2c3e50" rx="3"/>
+          <text x="455" y="120" text-anchor="middle" fill="white">NOP  ; (or another safe op)</text>
+          <rect x="330" y="130" width="250" height="22" fill="#1e8449" rx="3"/>
+          <text x="455" y="145" text-anchor="middle" fill="white">ADD R3, R1, R4     ; R1 ready!</text>
+          <rect x="330" y="155" width="250" height="22" fill="#2c3e50" rx="3"/>
+          <text x="455" y="170" text-anchor="middle" fill="white">STORE R3, 200(R2)</text>
+        </g>
+        <text x="460" y="225" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="#1e8449" font-weight="700">Total: 5 instrs + 0 stalls = 5 cycles ✅</text>
+      </svg>
+      <div class="diagram-caption">Moving LOAD R5 between LOAD R1 and ADD fills the stall slot productively</div>
+    </div>
+
+    <h4>Software Pipelining</h4>
+    <p>Software pipelining is an advanced technique for <strong>loops</strong>. Instead of finishing one iteration before starting the next, it <em>overlaps</em> iterations — like an assembly line.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" width="600">
+        <text x="300" y="18" text-anchor="middle" font-family="Lora,serif" font-size="13" font-weight="700" fill="#2c3e50">Software Pipelining — Assembly Line Analogy</text>
+        <!-- Without -->
+        <text x="150" y="38" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="11" fill="#c0392b">Without Pipelining</text>
+        <g font-family="Nunito,sans-serif" font-size="9">
+          <rect x="10" y="48" width="55" height="22" fill="#2471a3" rx="3"/>
+          <text x="37" y="63" text-anchor="middle" fill="white">Load i=0</text>
+          <rect x="68" y="48" width="55" height="22" fill="#1e8449" rx="3"/>
+          <text x="95" y="63" text-anchor="middle" fill="white">Compute</text>
+          <rect x="126" y="48" width="55" height="22" fill="#c0392b" rx="3"/>
+          <text x="153" y="63" text-anchor="middle" fill="white">Store i=0</text>
+          <text x="190" y="63" fill="#999" font-size="14">|</text>
+          <rect x="198" y="48" width="55" height="22" fill="#2471a3" rx="3"/>
+          <text x="225" y="63" text-anchor="middle" fill="white">Load i=1</text>
+          <rect x="256" y="48" width="55" height="22" fill="#1e8449" rx="3"/>
+          <text x="283" y="63" text-anchor="middle" fill="white">Compute</text>
+          <rect x="314" y="48" width="55" height="22" fill="#c0392b" rx="3"/>
+          <text x="341" y="63" text-anchor="middle" fill="white">Store i=1</text>
+          <text x="378" y="63" fill="#999" font-size="14">| …</text>
+        </g>
+        <!-- pipeline -->
+        <text x="150" y="105" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="11" fill="#1e8449">With Software Pipelining (overlapped)</text>
+        <g font-family="Nunito,sans-serif" font-size="9">
+          <!-- row labels -->
+          <text x="60" y="125" text-anchor="middle" fill="#2471a3" font-weight="700">LOAD</text>
+          <text x="60" y="145" text-anchor="middle" fill="#1e8449" font-weight="700">COMPUTE</text>
+          <text x="60" y="165" text-anchor="middle" fill="#c0392b" font-weight="700">STORE</text>
+          <!-- cycle columns -->
+          <rect x="100" y="113" width="40" height="18" fill="#2471a3" rx="2"/>
+          <text x="120" y="126" text-anchor="middle" fill="white">i=0</text>
+          <rect x="145" y="113" width="40" height="18" fill="#2471a3" rx="2"/>
+          <text x="165" y="126" text-anchor="middle" fill="white">i=1</text>
+          <rect x="190" y="113" width="40" height="18" fill="#2471a3" rx="2"/>
+          <text x="210" y="126" text-anchor="middle" fill="white">i=2</text>
+          <rect x="235" y="113" width="40" height="18" fill="#2471a3" rx="2"/>
+          <text x="255" y="126" text-anchor="middle" fill="white">i=3</text>
+          
+          <rect x="145" y="133" width="40" height="18" fill="#1e8449" rx="2"/>
+          <text x="165" y="146" text-anchor="middle" fill="white">i=0</text>
+          <rect x="190" y="133" width="40" height="18" fill="#1e8449" rx="2"/>
+          <text x="210" y="146" text-anchor="middle" fill="white">i=1</text>
+          <rect x="235" y="133" width="40" height="18" fill="#1e8449" rx="2"/>
+          <text x="255" y="146" text-anchor="middle" fill="white">i=2</text>
+          <rect x="280" y="133" width="40" height="18" fill="#1e8449" rx="2"/>
+          <text x="300" y="146" text-anchor="middle" fill="white">i=3</text>
+
+          <rect x="190" y="153" width="40" height="18" fill="#c0392b" rx="2"/>
+          <text x="210" y="166" text-anchor="middle" fill="white">i=0</text>
+          <rect x="235" y="153" width="40" height="18" fill="#c0392b" rx="2"/>
+          <text x="255" y="166" text-anchor="middle" fill="white">i=1</text>
+          <rect x="280" y="153" width="40" height="18" fill="#c0392b" rx="2"/>
+          <text x="300" y="166" text-anchor="middle" fill="white">i=2</text>
+          <rect x="325" y="153" width="40" height="18" fill="#c0392b" rx="2"/>
+          <text x="345" y="166" text-anchor="middle" fill="white">i=3</text>
+          
+          <!-- time axis -->
+          <text x="400" y="145" font-family="Nunito,sans-serif" font-size="10" fill="#1e8449" font-weight="700">All functional units</text>
+          <text x="400" y="160" font-family="Nunito,sans-serif" font-size="10" fill="#1e8449" font-weight="700">busy simultaneously!</text>
+        </g>
+        <!-- time arrow -->
+        <line x1="100" y1="185" x2="380" y2="185" stroke="#999" stroke-width="1.5"/>
+        <polygon points="380,185 370,181 370,189" fill="#999"/>
+        <text x="240" y="197" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="#999">Time →</text>
+      </svg>
+      <div class="diagram-caption">Software pipelining overlaps different phases of consecutive iterations, like a factory assembly line</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">
+        Q: Summarize the impact of instruction scheduling and software pipelining in the design of compilers for parallel processing architecture.
+        <span class="marks">5 Marks</span>
+      </div>
+      <div class="qa-a">
+        <p><strong>Impact of Instruction Scheduling:</strong></p>
+        <ul>
+          <li><strong>Hides memory latency:</strong> By moving loads early and placing independent instructions in the stall slots, the compiler hides the memory/functional unit latency from the critical path.</li>
+          <li><strong>Improves pipeline utilization:</strong> On an in-order pipelined processor, proper scheduling ensures no functional unit sits idle.</li>
+          <li><strong>Reduces code size impact:</strong> Unlike loop unrolling, scheduling doesn't increase code size.</li>
+          <li><strong>Critical for VLIW:</strong> Very Long Instruction Word architectures (like DSPs and some compilers for embedded systems) rely entirely on the compiler to schedule instructions correctly, since the hardware doesn't do it.</li>
+        </ul>
+        <p><strong>Impact of Software Pipelining:</strong></p>
+        <ul>
+          <li><strong>Maximizes throughput:</strong> All functional units (ALU, FPU, load unit) are kept busy in every cycle.</li>
+          <li><strong>Achieves near-peak performance:</strong> The initiation interval (II) — minimum cycles between starting consecutive iterations — approaches the theoretical minimum.</li>
+          <li><strong>Essential for SIMD loops:</strong> Combined with vectorization, software pipelining provides the maximum possible throughput on superscalar out-of-order processors.</li>
+          <li><strong>Trade-off:</strong> Requires a <em>prologue</em> (startup) and <em>epilogue</em> (wind-down) phase, increasing code complexity. The compiler must track "which iteration is each unit processing?"</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARALLEL MACHINES DESIGN -->
+  <div id="parallel-machines" class="section">
+    <h3>6. Design of Parallel Machines That Support Parallelizing Compilers</h3>
+
+    <div class="qa-block">
+      <div class="qa-q">
+        Q: Discuss the design aspects of parallel machines which support parallelizing compilers with respect to instruction streams (5 marks) and architecture (5 marks). Also: Outline the design aspects of parallel machines that support parallelizing compilers with respect to instruction and data streams.
+        <span class="marks">10 Marks</span>
+      </div>
+      <div class="qa-a">
+        <h4>Part A: Design with Respect to Instruction Streams (5 marks)</h4>
+        <p>The way a machine handles <em>instruction streams</em> fundamentally determines how a parallelizing compiler can exploit it:</p>
+
+        <ol>
+          <li><strong>Multiple Instruction Issue (Superscalar):</strong> The processor has multiple execution units and can issue 2–6 instructions per cycle. The compiler's instruction scheduler ensures these units are all fed with independent instructions simultaneously. Example: Intel's Core processors issue up to 6 µops/cycle.</li>
+
+          <li><strong>VLIW (Very Long Instruction Word):</strong> Each wide instruction word contains multiple "slots" — one per functional unit. The <em>compiler</em> (not hardware) decides how to pack instructions. This shifts scheduling complexity to the compiler but simplifies hardware. Example: Intel Itanium (IA-64).</li>
+
+          <li><strong>SIMT (Single Instruction Multiple Threads):</strong> As used in GPU architectures — one instruction is broadcast to many "lanes," each handling a different thread. The compiler generates kernel code where each thread has the same instruction sequence but different data.</li>
+
+          <li><strong>Instruction-Level Parallelism (ILP) Support:</strong> Hardware features like out-of-order execution, branch prediction, and register renaming allow the compiler to generate simpler code while the hardware finds ILP dynamically. The compiler can still help by exposing ILP through scheduling and loop transformations.</li>
+        </ol>
+
+        <h4>Part B: Design with Respect to Architecture (5 marks)</h4>
+        <p>At the architectural level, parallel machine design affects the compiler's ability to parallelize code:</p>
+
+        <ol>
+          <li><strong>Shared Memory Multiprocessors (SMP/UMA):</strong> Multiple cores share a single memory space. The compiler can generate multi-threaded code (OpenMP) where threads communicate via shared variables. Cache coherence protocols (MESI) ensure correctness. The compiler must avoid false sharing (different threads writing to the same cache line).</li>
+
+          <li><strong>NUMA (Non-Uniform Memory Access):</strong> Memory is physically distributed; local memory is faster. The compiler (or runtime) must consider <em>data placement</em> — putting data close to the thread that uses it. Compilers for NUMA systems generate "first-touch" allocation or affinity hints.</li>
+
+          <li><strong>Vector Architecture (Data Parallelism):</strong> Register files contain vectors (256–512 bits wide). The compiler's vectorizer transforms scalar loops into vector operations. Architecture provides gather/scatter instructions for non-contiguous memory access, which the compiler exploits for irregular patterns where possible.</li>
+
+          <li><strong>Memory Hierarchy Design:</strong> Large L1/L2/L3 caches with prefetch support allow the compiler to apply loop tiling aggressively. Wide cache lines (64 bytes typical) reward spatial locality optimizations.</li>
+
+          <li><strong>Synchronization Primitives:</strong> Hardware compare-and-swap, test-and-set, and memory barriers allow the compiler to implement fine-grained synchronization for parallel sections without OS overhead.</li>
+        </ol>
+
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 580 160" xmlns="http://www.w3.org/2000/svg" width="580">
+            <text x="290" y="18" text-anchor="middle" font-family="Lora,serif" font-size="13" font-weight="700" fill="#2c3e50">SMP Architecture (Compiler Target)</text>
+            <!-- cores -->
+            <rect x="10" y="30" width="110" height="60" rx="8" fill="#2471a3"/>
+            <text x="65" y="52" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Core 0</text>
+            <rect x="20" y="58" width="90" height="20" rx="4" fill="#1a5276"/>
+            <text x="65" y="72" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="9">L1/L2 Cache</text>
+            <rect x="130" y="30" width="110" height="60" rx="8" fill="#2471a3"/>
+            <text x="185" y="52" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Core 1</text>
+            <rect x="140" y="58" width="90" height="20" rx="4" fill="#1a5276"/>
+            <text x="185" y="72" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="9">L1/L2 Cache</text>
+            <rect x="250" y="30" width="110" height="60" rx="8" fill="#2471a3"/>
+            <text x="305" y="52" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Core 2</text>
+            <rect x="260" y="58" width="90" height="20" rx="4" fill="#1a5276"/>
+            <text x="305" y="72" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="9">L1/L2 Cache</text>
+            <rect x="370" y="30" width="110" height="60" rx="8" fill="#2471a3"/>
+            <text x="425" y="52" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="11">Core 3</text>
+            <rect x="380" y="58" width="90" height="20" rx="4" fill="#1a5276"/>
+            <text x="425" y="72" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="9">L1/L2 Cache</text>
+            <!-- L3 bus -->
+            <rect x="10" y="100" width="470" height="25" rx="5" fill="#7d3c98"/>
+            <text x="245" y="117" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="10">Shared L3 Cache + Memory Bus (Cache Coherence)</text>
+            <!-- RAM -->
+            <rect x="10" y="132" width="470" height="22" rx="5" fill="#c0392b"/>
+            <text x="245" y="147" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-weight="700" font-size="10">Main Memory (DRAM) — shared</text>
+            <!-- compiler note -->
+            <text x="510" y="50" font-family="Nunito,sans-serif" font-size="9" fill="#c0392b" font-weight="700">Compiler</text>
+            <text x="510" y="63" font-family="Nunito,sans-serif" font-size="9" fill="#666">assigns</text>
+            <text x="510" y="76" font-family="Nunito,sans-serif" font-size="9" fill="#666">threads to</text>
+            <text x="510" y="89" font-family="Nunito,sans-serif" font-size="9" fill="#666">cores</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SSA -->
+  <div id="ssa" class="section">
+    <h3>7. Static Single Assignment (SSA) Form</h3>
+
+    <p>SSA is a property of the IR in which every variable is <strong>defined (assigned) exactly once</strong>. It's not a machine architecture — it's a form of the IR that makes optimization <em>much easier</em>.</p>
+
+    <div class="callout info">
+      <div class="callout-title">💡 Intuition — Why SSA Helps</div>
+      Normally, the same variable name can be assigned many times. In SSA, each assignment gets a unique name. This makes it trivial to see which assignment "reaches" any use — because there's only ONE definition per name!
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>Normal IR (not SSA)</h4>
+        <pre><code>x = 1
+x = 2       // redefines x!
+y = x + 1   // which x is this?</code></pre>
+        <p>Hard to track — x has two definitions. Optimization is ambiguous.</p>
+      </div>
+      <div class="card">
+        <h4>SSA Form</h4>
+        <pre><code>x₁ = 1
+x₂ = 2
+y₁ = x₂ + 1  // clearly uses second def</code></pre>
+        <p>Each use points to exactly one definition. Dead code (<code>x₁</code> unused) is obvious.</p>
+      </div>
+    </div>
+
+    <h4>The Φ (Phi) Function</h4>
+    <p>At join points (where multiple paths merge, e.g., after an if-else), SSA uses a special <strong>Φ-function</strong> to merge multiple definitions:</p>
+
+    <pre><code>// Original code:
+if (cond) x = 1; else x = 2;
+y = x + 1;
+
+// SSA form:
+if (cond) x₁ = 1; else x₂ = 2;
+x₃ = Φ(x₁, x₂)   // "whichever path was taken"
+y₁ = x₃ + 1;</code></pre>
+
+    <h4>Benefits of SSA for Optimization</h4>
+    <ul>
+      <li><strong>Dead code elimination</strong>: If x₁ has no uses, remove its definition</li>
+      <li><strong>Constant propagation</strong>: If x₁ = 5, replace all uses of x₁ with 5</li>
+      <li><strong>Register allocation</strong>: SSA form directly maps to interference graphs</li>
+      <li><strong>Parallelism detection</strong>: SSA makes data flow dependencies explicit</li>
+    </ul>
+  </div>
+
+  <!-- DOMAIN SPECIFIC -->
+  <div id="domain" class="section">
+    <h3>8. Domain-Specific Languages (DSLs) and Compilation</h3>
+
+    <p>A DSL is a language designed for a <em>specific problem domain</em> rather than general-purpose programming. DSLs allow high-level expression of domain problems which a specialized compiler can optimize far better than a general-purpose compiler.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>Examples of DSLs</h4>
+        <ul>
+          <li><strong>SQL</strong> — database queries</li>
+          <li><strong>OpenGL/GLSL</strong> — graphics shaders</li>
+          <li><strong>Halide</strong> — image processing pipelines</li>
+          <li><strong>TensorFlow/XLA</strong> — machine learning graphs</li>
+          <li><strong>VHDL/Verilog</strong> — hardware design</li>
+          <li><strong>Regex</strong> — pattern matching</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Why DSL Compilers Excel</h4>
+        <ul>
+          <li>Domain knowledge reveals <em>semantic constraints</em> a general compiler can't see (e.g., matrix dimensions are always positive)</li>
+          <li>Automatic generation of parallel code (e.g., GPU kernels from numpy-style operations)</li>
+          <li>Whole-program optimization impossible in general compilers</li>
+          <li>Halide separates <em>algorithm</em> from <em>schedule</em> — the same image filter can target CPU cache, GPU, or mobile with just a schedule change</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4>Impact of Language Design on Compiler Optimization</h4>
+    <p>Language design choices profoundly affect what compilers can optimize:</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Language Feature</th><th>Impact on Compiler</th></tr>
+        <tr><td>Immutability (Haskell, Rust)</td><td>No aliasing → freely parallelize and vectorize</td></tr>
+        <tr><td>Restrict keyword (C99)</td><td>Promises no aliasing on pointers → enables vectorization</td></tr>
+        <tr><td>Type system (strong types)</td><td>Compiler can infer sizes, eliminate bounds checks</td></tr>
+        <tr><td>Pointer arithmetic (C)</td><td>Conservative aliasing → blocks many optimizations</td></tr>
+        <tr><td>Garbage collection (Java)</td><td>Runtime overhead, but enables safe parallelism</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PARALLELISM ON MULTI-CORE -->
+  <div id="multicore" class="section">
+    <h3>9. Parallelism on Multi-Core: Sorting Example</h3>
+
+    <div class="qa-block">
+      <div class="qa-q">
+        Q: Consider a program for sorting numbers in C. Discuss and illustrate mechanisms by which we may achieve parallelism on modern micro-processors that support multi-core architectures. [5 marks]. Also, provide an example where parallelism is hard to achieve, with justification. [5 marks]
+      </div>
+      <div class="qa-a">
+        <h4>Part A: Achieving Parallelism — Parallel Merge Sort (5 marks)</h4>
+        <p>Merge sort is naturally parallelizable because the left-half and right-half recursive sorts are <strong>completely independent</strong>.</p>
+
+        <pre><code>#include &lt;omp.h&gt;
+
+void parallel_mergesort(int *arr, int n) {
+    if (n &lt;= 1) return;
+    int mid = n / 2;
+
+    #pragma omp parallel sections  // compiler directive → two threads
+    {
+        #pragma omp section
+        parallel_mergesort(arr, mid);        // Core 0 sorts left half
+
+        #pragma omp section
+        parallel_mergesort(arr + mid, n - mid); // Core 1 sorts right half
+    }
+
+    merge(arr, mid, n);  // sequential merge (dependencies here)
+}
+// Time: O(n log n / p) for p processors — linear speedup!</code></pre>
+
+        <p><strong>Other mechanisms:</strong></p>
+        <ul>
+          <li><strong>Thread-level parallelism:</strong> pthreads or OpenMP divide work across CPU cores</li>
+          <li><strong>Data partitioning:</strong> Split array into chunks, sort each chunk on a different core, then merge (like GNU parallel sort)</li>
+          <li><strong>SIMD comparison:</strong> Use SSE/AVX to compare 8 integers simultaneously in the merge step</li>
+          <li><strong>Cache-aware:</strong> Ensure each thread's chunk fits in its L2 cache to avoid cross-core memory traffic</li>
+        </ul>
+
+        <h4>Part B: Where Parallelism is Hard — Bubble Sort (5 marks)</h4>
+        <pre><code>// Classic bubble sort — hard to parallelize:
+for (int i = 0; i &lt; n-1; i++) {
+    for (int j = 0; j &lt; n-i-1; j++) {
+        if (arr[j] &gt; arr[j+1])
+            swap(arr[j], arr[j+1]);
+    }
+}</code></pre>
+        <p><strong>Why parallelism is hard here:</strong></p>
+        <ol>
+          <li><strong>Loop-carried dependency:</strong> In the inner loop, <code>arr[j]</code> and <code>arr[j+1]</code> overlap — iteration j=2 touches <code>arr[2]</code> and <code>arr[3]</code>, while j=3 touches <code>arr[3]</code> and <code>arr[4]</code>. They share <code>arr[3]</code> → a <em>data dependency</em>.</li>
+          <li><strong>Sequential dependency:</strong> Each outer loop iteration depends on the result of the previous — the array state changes each pass.</li>
+          <li><strong>Race conditions:</strong> If multiple threads simultaneously check and swap adjacent elements, they can corrupt data without synchronization.</li>
+          <li><strong>Overhead exceeds benefit:</strong> Even with synchronization, the overhead of locking adjacent elements for O(n²) operations exceeds any parallel speedup.</li>
+        </ol>
+        <p><em>Note:</em> A variant called Odd-Even Transposition Sort does allow limited parallelism but at the cost of more passes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== EXAM Q&A ==================== -->
+  <div id="exam" class="section">
+    <div class="section-title">
+      <div class="section-num">✎</div>
+      All Exam Questions &amp; Answers
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">Q1: Evaluate the effectiveness of Automatic Parallelization and Cache Locality Optimization in handling complex, real-world applications with irregular data structures (e.g., graphs, sparse matrices) (6 marks). Analyze the challenges compilers face when automatically parallelizing such applications (4 marks). <span class="marks">10 Marks</span></div>
+      <div class="qa-a">
+        <p><em>See the detailed answer in Section 7.2 (Automatic Parallelization) above. Summary below:</em></p>
+        <p><strong>Effectiveness on regular code (6 marks):</strong> Automatic parallelization and cache locality optimization work extremely well on regular computations — dense matrix operations, signal processing, and embarrassingly parallel loops. Techniques like loop tiling, interchange, unrolling, and SIMD vectorization provide near-peak performance for dense numerical codes.</p>
+        <p><strong>Challenges with irregular structures (4 marks):</strong></p>
+        <ol>
+          <li><strong>Data-dependent access:</strong> Graph traversals access memory based on input data (edge lists), making compile-time analysis impossible.</li>
+          <li><strong>Loop-carried dependencies:</strong> BFS/DFS have implicit dependencies (the "visited" set) preventing safe parallel execution.</li>
+          <li><strong>Pointer aliasing:</strong> Graph nodes represented as pointers may alias — the compiler can't prove independence.</li>
+          <li><strong>Cache unfriendliness:</strong> Random memory access patterns (following graph edges) defeat spatial and temporal locality — tiling and blocking don't help.</li>
+          <li><strong>Load imbalance:</strong> High-degree vs low-degree nodes create unequal work per thread, reducing parallel efficiency.</li>
+        </ol>
+        <p><strong>Conclusion:</strong> For irregular data, runtime parallelization frameworks (e.g., TBB, Cilk) with inspector-executor models are more effective than static compiler analysis.</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">Q2: Discuss the design aspects of parallel machines which support parallelizing compilers with respect to instruction streams (5 marks) and architecture (5 marks). <span class="marks">10 Marks</span></div>
+      <div class="qa-a"><p><em>See the complete answer in Section 7.6 (Parallel Machine Design) above.</em></p></div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">Q3(i): When instructions are independent, is it possible to change the evaluation order during code generation? Justify your answer with an example. (5 Marks)</div>
+      <div class="qa-a"><p><em>See the complete answer in Section 6.5 (Evaluation Order) above.</em></p></div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">Q3(ii): Specify two or more roles of runtime organization in code generation phase. (5 Marks)</div>
+      <div class="qa-a"><p><em>See the complete answer in Section 6.6 (Runtime Organization) above.</em></p></div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">Q4: Analyse the difference between scalar processor and vector processor with respect to compiler design aspects. Illustrate with relevant examples.</div>
+      <div class="qa-a"><p><em>See the complete answer in Section 7.4 (Scalar vs Vector Processors) above.</em></p></div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">Q5a: Consider a sorting program in C. Discuss and illustrate mechanisms for parallelism on modern multi-core processors. [5 marks]<br>Q5b: Provide an example where parallelism is hard to achieve, with justification. [5 marks]</div>
+      <div class="qa-a"><p><em>See the complete answer in Section 7.9 (Multi-Core Parallelism) above.</em></p></div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">Q7(i): Summarize the impact of instruction scheduling and software pipelining in the design of compilers for parallel processing architecture. (5 marks)<br>Q7(ii): Outline the design aspects of parallel machines that support parallelizing compilers with respect to instruction and data streams. (5 marks)</div>
+      <div class="qa-a"><p><em>See the complete answers in Sections 7.5 and 7.6 above.</em></p></div>
+    </div>
+  </div>
+
+  <!-- ==================== PRACTICE Q&A ==================== -->
+  <div id="practice" class="section">
+    <div class="section-title">
+      <div class="section-num">📝</div>
+      Sample Practice Questions &amp; Answers
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">PQ1: Explain the concept of register spilling. When does it occur and how does a compiler handle it? <span class="marks">5 Marks</span></div>
+      <div class="qa-a">
+        <p><strong>Register spilling</strong> occurs when the number of simultaneously live variables at some program point exceeds the number of available physical registers. The compiler must "spill" one variable — temporarily storing it in memory and reloading it when needed.</p>
+        <p><strong>When it occurs:</strong> In loops with many computations, at function call sites (caller-saved registers must be spilled), or in code with many live variables.</p>
+        <p><strong>How the compiler handles it:</strong></p>
+        <ol>
+          <li>Detect the spill using graph coloring — if the interference graph can't be colored with k colors, spilling is needed.</li>
+          <li>Select which variable to spill — typically the one with the lowest <em>benefit/cost ratio</em> (infrequently used variables are spilled first).</li>
+          <li>Insert STORE instructions before the spill point and LOAD instructions at each subsequent use.</li>
+          <li>Re-run the coloring algorithm — the variable is now split into two: before-spill and after-reload.</li>
+        </ol>
+        <pre><code>; Example spill for variable 'x':
+; Before spill point:
+  ST  [spill_slot_x], Rx   ; save x to memory
+
+; Before use of x:
+  LD  Rx, [spill_slot_x]   ; restore x from memory
+  ADD Ry, Rx, Rz           ; use x</code></pre>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">PQ2: What is loop tiling? Why is it important for cache performance? Give an example using matrix multiplication. <span class="marks">5 Marks</span></div>
+      <div class="qa-a">
+        <p><strong>Loop tiling</strong> (also called loop blocking) divides the iteration space of a nested loop into rectangular tiles of size T×T. The key idea is that each tile fits entirely within the cache, so all accesses to the tile hit the cache rather than going to main memory.</p>
+        <p><strong>Importance:</strong> In matrix multiplication, the naive triple loop accesses matrix B in a column-major pattern if the inner loop is over k. This causes a cache miss for every access to B (for large matrices). Tiling ensures a B-tile stays in cache for an entire tile of A.</p>
+        <pre><code>// Naive matrix multiply — poor cache use for B:
+for i: for j: for k:
+  C[i][j] += A[i][k] * B[k][j];
+// B is accessed column-by-column: B[0][j], B[1][j], ...
+// Each B[k][j] is N*sizeof(double) bytes apart — cache miss every time!
+
+// Tiled version (tile size T=64 for 64×64 floats = 16KB in L1):
+for i0=0 by T: for j0=0 by T: for k0=0 by T:
+  for i=i0 to i0+T:
+    for j=j0 to j0+T:
+      for k=k0 to k0+T:
+        C[i][j] += A[i][k] * B[k][j];
+// The T×T tile of B stays in cache for all (i,j) in the tile!
+// Cache miss rate drops from O(N³) to O(N³/T)</code></pre>
+        <p>With T=64 and 8-byte doubles: a 64×64 tile = 32KB — fits in L1 cache. This can provide 5–10× speedup on matrix operations.</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">PQ3: What is an Activation Record? Describe its structure and explain how stack allocation works for nested function calls. <span class="marks">8 Marks</span></div>
+      <div class="qa-a">
+        <p>An <strong>Activation Record</strong> (stack frame) is a block of memory allocated on the runtime stack each time a function is called. It stores all the information the function needs during execution and is popped when the function returns.</p>
+        <p><strong>Structure (from higher to lower address):</strong></p>
+        <ol>
+          <li><strong>Return value:</strong> Space for the function's return value</li>
+          <li><strong>Actual parameters:</strong> Arguments passed by the caller</li>
+          <li><strong>Control link:</strong> Pointer to the caller's activation record (frame pointer)</li>
+          <li><strong>Access link:</strong> Pointer to the enclosing scope's frame (for nested functions)</li>
+          <li><strong>Return address:</strong> The instruction address to resume after return</li>
+          <li><strong>Saved registers:</strong> Callee-saved registers preserved across the call</li>
+          <li><strong>Local variables:</strong> Space for function's local data</li>
+          <li><strong>Temporaries:</strong> Space for intermediate computations</li>
+        </ol>
+        <p><strong>Stack allocation for nested calls (e.g., main → f → g):</strong></p>
+        <pre><code>// Call sequence: main() calls f(5), which calls g(3)
+
+Stack state when g() is executing:
+High address:
+  [main's frame    ] ← oldest frame
+  [f(5)'s frame    ] ← f's locals, params, return addr
+  [g(3)'s frame    ] ← top of stack (sp points here)
+Low address (stack pointer sp)
+
+// When g() returns:
+//   1. Return value placed in designated location
+//   2. Restore fp to f's frame (from control link)
+//   3. Jump to return address
+//   4. g's frame is "popped" (sp advances past it)
+// Stack is back to just [main, f]</code></pre>
+        <p>This LIFO (Last In, First Out) discipline matches the natural nesting of function calls perfectly. The frame pointer (fp) provides a stable reference point; local variables are accessed as <code>offset(fp)</code>.</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">PQ4: Explain SSA form and describe how the Φ (phi) function works. Why is SSA useful for optimization? <span class="marks">5 Marks</span></div>
+      <div class="qa-a">
+        <p><strong>Static Single Assignment (SSA)</strong> form is an IR property where every variable is assigned exactly once. When a variable is reassigned, a new version is created with a subscript (x₁, x₂, etc.).</p>
+        <p><strong>The Φ (Phi) function</strong> is needed at <em>join points</em> — places in the control flow graph where multiple paths merge (after if-else, loop back-edges). The Φ-function takes one argument per incoming path and produces the value that came from whichever path was actually taken at runtime.</p>
+        <pre><code>// C code:
+if (a > b) x = 1; else x = 2;
+y = x * 3;
+
+// SSA form:
+if (a₁ > b₁) {
+  x₁ = 1
+} else {
+  x₂ = 2
+}
+x₃ = Φ(x₁, x₂)  // = x₁ if true branch taken, x₂ if false
+y₁ = x₃ * 3</code></pre>
+        <p><strong>Why SSA helps optimization:</strong></p>
+        <ul>
+          <li><strong>Dead code elimination:</strong> x₁ has no uses → remove it</li>
+          <li><strong>Constant propagation:</strong> If x₁ = 5 always, replace all x₁ uses with 5</li>
+          <li><strong>Value numbering:</strong> Detect when two expressions always produce the same value</li>
+          <li><strong>Register allocation:</strong> Each SSA name = one live range = one node in the interference graph</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">PQ5: Compare SISD, SIMD, and MIMD architectures. For each, describe how a parallelizing compiler would target it differently. <span class="marks">6 Marks</span></div>
+      <div class="qa-a">
+        <div class="table-wrap">
+          <table>
+            <tr><th>Architecture</th><th>Description</th><th>Compiler Strategy</th><th>Example</th></tr>
+            <tr>
+              <td><strong>SISD</strong></td>
+              <td>Single instruction, single data — purely sequential</td>
+              <td>Standard scalar code gen: instruction scheduling, register allocation, loop unrolling for ILP</td>
+              <td>Classic single-core CPU</td>
+            </tr>
+            <tr>
+              <td><strong>SIMD</strong></td>
+              <td>One instruction operates on multiple data elements (vector of width w)</td>
+              <td>Auto-vectorization: detect data-parallel loops, pack elements into vector registers, generate SIMD instructions (SSE/AVX). Handle alignment, remainder loops, and aliasing checks.</td>
+              <td>Intel AVX, ARM NEON, GPU shaders</td>
+            </tr>
+            <tr>
+              <td><strong>MIMD</strong></td>
+              <td>Multiple processors execute different instructions on different data independently</td>
+              <td>Parallel code gen: identify parallel loop iterations/sections, generate thread fork/join code (OpenMP), ensure thread-safe memory access, manage synchronization barriers, handle data placement for NUMA</td>
+              <td>Multi-core CPUs, clusters</td>
+            </tr>
+          </table>
+        </div>
+        <p><strong>Key difference for compilers:</strong> SIMD vectorization is a <em>within-one-thread</em> optimization; MIMD parallelization is an <em>across-threads</em> optimization. A modern compiler does both: first vectorize inner loops (SIMD), then parallelize outer loops across cores (MIMD). This is called <strong>hierarchical parallelism</strong>.</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">PQ6: What is Next-Use Information and how is it computed? Why does the code generator need it? <span class="marks">5 Marks</span></div>
+      <div class="qa-a">
+        <p><strong>Next-Use Information</strong> tells the code generator whether a variable's current value will be used again in the future. A variable is "live" if it will be used; "dead" if it will not. This is also called liveness analysis.</p>
+        <p><strong>Why needed:</strong> The code generator uses next-use to make register allocation decisions. If a variable is dead (no future use), its register can be immediately freed and reused. If it's live, the value must be preserved.</p>
+        <p><strong>Algorithm (backwards scan through a basic block):</strong></p>
+        <ol>
+          <li>Initialize all variables as "dead" at block exit (or live if live-out)</li>
+          <li>Scan statements backwards from last to first</li>
+          <li>For statement <code>x = y op z</code>:
+            <ul>
+              <li>Record next-use info for x, y, z at this point</li>
+              <li>Set x to dead (just defined here — definition kills previous liveness)</li>
+              <li>Set y, z to live (just used)</li>
+            </ul>
+          </li>
+        </ol>
+        <pre><code>// Block:         ← backward scan →
+(1) a = b + c   x has no next-use after (1)
+(2) x = a * d   b,c live after (1); a live (used in 2); d live
+(3) e = x + 1   x live (used in 3); e has no later use
+
+Result: at stmt (2), 'a' is live (next use at stmt 2), 'x' is dead at stmt 1
+At stmt (3), 'x' is live (used right here), 'e' is dead after</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK REFERENCE -->
+  <div class="section">
+    <div class="section-title">
+      <div class="section-num">⚡</div>
+      Quick Reference Cheat Sheet
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>Module 6 Key Terms</h4>
+        <ul>
+          <li><strong>IR</strong> — Intermediate Representation (input to code gen)</li>
+          <li><strong>Register Allocation</strong> — which variables get registers</li>
+          <li><strong>Register Assignment</strong> — which specific register</li>
+          <li><strong>Spilling</strong> — storing a register value to memory</li>
+          <li><strong>Graph Coloring</strong> — register allocation technique</li>
+          <li><strong>NP-complete</strong> — optimal register allocation is hard</li>
+          <li><strong>Activation Record</strong> — stack frame per function call</li>
+          <li><strong>Frame Pointer</strong> — stable reference into current frame</li>
+          <li><strong>Stack</strong> — LIFO storage for activation records</li>
+          <li><strong>Heap</strong> — dynamic allocation (malloc/new)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Module 7 Key Terms</h4>
+        <ul>
+          <li><strong>ILP</strong> — Instruction Level Parallelism</li>
+          <li><strong>SIMD</strong> — Single Instruction Multiple Data (vectorization)</li>
+          <li><strong>MIMD</strong> — Multiple Instruction Multiple Data (multi-core)</li>
+          <li><strong>Auto-parallelization</strong> — compiler finds parallelism</li>
+          <li><strong>Loop tiling</strong> — block loops for cache efficiency</li>
+          <li><strong>Loop interchange</strong> — swap loop order for locality</li>
+          <li><strong>Software pipelining</strong> — overlap loop iterations</li>
+          <li><strong>SSA</strong> — Static Single Assignment form</li>
+          <li><strong>Φ-function</strong> — merges values at control-flow joins</li>
+          <li><strong>Vectorization</strong> — convert scalar loops to SIMD</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mnemonic">
+      <div class="mnemonic-title">🧠 Final Mega-Mnemonic — Module 7 Flow</div>
+      <div class="mnemonic-word">PARSE → AVCI → SSA</div>
+      <p style="margin-top:0.5rem">
+        <strong>P</strong>arallelize (auto) → <strong>A</strong>nalyze dependencies → <strong>R</strong>eorder (instruction schedule) → <strong>S</strong>chedule (software pipeline) → <strong>E</strong>xploit (SIMD/vector) →
+        <strong>A</strong>rchitecture-aware (cache tile) → <strong>V</strong>ectorize → <strong>C</strong>ode generate → <strong>I</strong>mprove (SSA optimization) →
+        <strong>S</strong>tatic Single Assignment (enables all of the above)
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Compiler Design — Modules 6 &amp; 7 Study Guide &nbsp;|&nbsp; BCSE307L &nbsp;|&nbsp; Built for exam excellence, not rote learning</p>
+</footer>
+
+<script>
+function showTab(btn, id) {
+  const parent = btn.closest('.tabs').parentElement;
+  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
