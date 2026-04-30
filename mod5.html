@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Optimization — Compiler Design Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf8f5;
+    --surface: #ffffff;
+    --surface2: #f4f1ec;
+    --border: #e8e2d9;
+    --text: #2d2926;
+    --text-muted: #7a6f66;
+    --accent: #c0392b;
+    --accent2: #2c7a4b;
+    --accent3: #1a5276;
+    --accent4: #7d3c98;
+    --accent5: #e67e22;
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+    --highlight: #fff8e1;
+    --highlight-border: #f59f00;
+    --mnemonic-bg: #e8f5e9;
+    --mnemonic-border: #2c7a4b;
+    --example-bg: #e8f0fb;
+    --example-border: #1a5276;
+    --question-bg: #fdf3e7;
+    --question-border: #e67e22;
+    --diagram-bg: #f9f9f9;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 5rem;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 3rem 1rem 2.5rem;
+    background: linear-gradient(135deg, #fff9f9 0%, #f0f7ff 100%);
+    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--border);
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content:'';
+    position: absolute; top:-60px; right:-60px;
+    width:220px; height:220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(192,57,43,0.08) 0%, transparent 70%);
+  }
+  .hero h1 {
+    font-family: 'Lora', serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .hero .subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 1.2rem;
+  }
+  .chips { display: none; }
+
+  /* ── TOC ── */
+  .toc { display: none; }
+
+  /* ── Mobile base ── */
+  @media(max-width: 600px) {
+    body { font-size: 15px; }
+    .container { padding: 1.2rem 0.9rem 4rem; }
+    .hero { padding: 1.8rem 0.8rem 1.5rem; }
+    .hero h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.3rem; }
+    .code-block { font-size: 0.74rem; padding: 0.9rem 0.8rem; }
+    .ba-box { font-size: 0.75rem; padding: 0.6rem 0.7rem; }
+    table { font-size: 0.8rem; }
+    th, td { padding: 0.45rem 0.6rem; }
+    .tech-card-body { padding: 0.8rem 0.9rem; }
+    .question-block .q-body { padding: 0.8rem 0.9rem; }
+    .step { padding: 0.6rem 0.8rem; }
+    .card { padding: 0.9rem 1rem; }
+  }
+
+
+  /* ── SECTION ── */
+  section { margin-bottom: 3rem; }
+  h2 {
+    font-family: 'Lora', serif;
+    font-size: 1.6rem; font-weight: 700;
+    color: var(--accent);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.2rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  h2 .num {
+    background: var(--accent);
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+  }
+  h3 {
+    font-family: 'Lora', serif;
+    font-size: 1.15rem; font-weight: 600;
+    color: var(--accent3);
+    margin: 1.5rem 0 0.6rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  h3::before { content:'▸'; color: var(--accent); font-size: 0.85rem; }
+  h4 {
+    font-size: 1rem; font-weight: 800;
+    color: var(--text);
+    margin: 1.2rem 0 0.4rem;
+  }
+  p { margin-bottom: 0.8rem; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+
+  /* ── CODE ── */
+  .code-block {
+    background: var(--code-bg);
+    color: var(--code-text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    padding: 1.2rem 1.4rem;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    margin: 0.8rem 0;
+    border-left: 4px solid var(--accent);
+    white-space: pre;
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--surface2);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  /* ── CALLOUTS ── */
+  .mnemonic {
+    background: var(--mnemonic-bg);
+    border-left: 4px solid var(--mnemonic-border);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+  }
+  .mnemonic .mnemonic-title {
+    font-weight: 800; font-size: 0.8rem;
+    color: var(--mnemonic-border);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+  }
+
+  .example {
+    background: var(--example-bg);
+    border-left: 4px solid var(--example-border);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+  }
+  .example .ex-title {
+    font-weight: 800; font-size: 0.8rem;
+    color: var(--example-border);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+
+  .highlight-box {
+    background: var(--highlight);
+    border: 1.5px solid var(--highlight-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+  }
+
+  .question-block {
+    background: var(--question-bg);
+    border: 1.5px solid var(--question-border);
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+  }
+  .question-block .q-header {
+    background: var(--question-border);
+    color: white;
+    font-weight: 800; font-size: 0.82rem;
+    padding: 0.5rem 1rem;
+    border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .question-block .q-body { padding: 1rem 1.2rem; }
+  .question-block .q-text {
+    font-weight: 700; margin-bottom: 0.8rem;
+    color: var(--text);
+  }
+  .question-block .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    margin: 0.4rem 0;
+    display: flex; gap: 0.8rem; align-items: flex-start;
+  }
+  .question-block .step-num {
+    background: var(--accent3);
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; font-weight: 700;
+    min-width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ── DIAGRAMS (SVG) ── */
+  .diagram-wrap {
+    background: var(--diagram-bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+  .diagram-wrap svg { max-width: 100%; height: auto; }
+  .diagram-caption {
+    font-size: 0.82rem; color: var(--text-muted);
+    text-align: center; margin-top: 0.4rem; font-style: italic;
+  }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media(max-width:640px){ .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.88rem; margin: 0.8rem 0;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  th {
+    background: var(--accent3);
+    color: white; font-weight: 700;
+    padding: 0.6rem 0.9rem; text-align: left;
+  }
+  td { padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: var(--surface2); }
+
+  /* ── LIST ── */
+  ul, ol { padding-left: 1.4rem; margin-bottom: 0.8rem; }
+  li { margin-bottom: 0.3rem; }
+
+  /* ── TAG ── */
+  .tag {
+    display: inline-block;
+    font-size: 0.75rem; font-weight: 700;
+    padding: 0.15rem 0.55rem; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .tag-red { background: #fde8e8; color: var(--accent); }
+  .tag-blue { background: #e8f0fb; color: var(--accent3); }
+  .tag-green { background: var(--mnemonic-bg); color: var(--accent2); }
+  .tag-orange { background: #fef3e2; color: var(--accent5); }
+
+  /* ── TECHNIQUE CARD ── */
+  .tech-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .tech-card-header {
+    padding: 0.7rem 1.2rem;
+    font-weight: 800;
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: 1rem;
+  }
+  .tech-card-body { padding: 1rem 1.2rem; background: var(--surface); }
+  .tc-red .tech-card-header { background: #fde8e8; color: var(--accent); border-bottom: 2px solid var(--accent); }
+  .tc-blue .tech-card-header { background: #e8f0fb; color: var(--accent3); border-bottom: 2px solid var(--accent3); }
+  .tc-green .tech-card-header { background: var(--mnemonic-bg); color: var(--accent2); border-bottom: 2px solid var(--accent2); }
+  .tc-purple .tech-card-header { background: #f5eafb; color: var(--accent4); border-bottom: 2px solid var(--accent4); }
+  .tc-orange .tech-card-header { background: #fef3e2; color: var(--accent5); border-bottom: 2px solid var(--accent5); }
+
+  /* ── BEFORE/AFTER ── */
+  .ba-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center; margin: 0.8rem 0; }
+  .ba-grid .arrow { font-size: 1.5rem; color: var(--accent3); font-weight: 700; text-align: center; }
+  @media(max-width:500px){ .ba-grid { grid-template-columns: 1fr; } .ba-grid .arrow { transform: rotate(90deg); } }
+
+  .ba-box {
+    border-radius: var(--radius);
+    padding: 0.7rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    white-space: pre;
+  }
+  .ba-before { background: #fde8e8; border: 1.5px solid var(--accent); }
+  .ba-after  { background: #e8f5e9; border: 1.5px solid var(--accent2); }
+
+  /* ── FLOW CHART (SVG based) ── */
+  .block-svg rect { rx: 8; }
+
+
+
+  /* ── DEFINITION ── */
+  .def {
+    border-left: 4px solid var(--accent4);
+    background: #f9f4fd;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 0.8rem 1.1rem;
+    margin: 0.7rem 0;
+    font-size: 0.95rem;
+  }
+  .def strong { color: var(--accent4); }
+
+  /* ── INTUITION BOX ── */
+  .intuition {
+    background: linear-gradient(135deg, #fff8e1, #fff3cd);
+    border: 1.5px dashed var(--highlight-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+  }
+  .intuition-title { font-weight: 800; color: #b7791f; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+
+  hr { border: none; border-top: 2px dashed var(--border); margin: 2rem 0; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+
+
+<div class="container">
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Code Optimization</h1>
+  <p class="subtitle">Compiler Design · Unit V</p>
+</div>
+
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 1: INTRO -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="intro">
+<h2><span class="num">1</span> Introduction to Code Optimization</h2>
+
+<div class="intuition">
+  <div class="intuition-title">🧠 Intuition First</div>
+  Think of code optimization like a GPS that finds not just <em>a</em> route, but the <em>fastest</em> route. The compiler takes your intermediate code and tries to make it run faster and use less memory — without changing what it <em>does</em>.
+</div>
+
+<p>The <strong>code optimization phase</strong> improves the intermediate code so that the resulting machine code is faster and smaller. It does <em>not</em> change the meaning of the program — it only changes <em>how</em> it is computed.</p>
+
+<div class="highlight-box">
+  <strong>Goal:</strong> Less time + Less space, same output. <br>
+  <code>Better intermediate code → Faster machine code</code>
+</div>
+
+<h3>Criteria for Code-Improving Transformations</h3>
+<div class="card">
+  <table>
+    <tr><th>#</th><th>Criterion</th><th>What it means</th></tr>
+    <tr><td>1</td><td><strong>Meaning-preserving</strong></td><td>Must not change the output of the program</td></tr>
+    <tr><td>2</td><td><strong>Measurably faster</strong></td><td>Must provide a demonstrable speed improvement</td></tr>
+    <tr><td>3</td><td><strong>Worth the effort</strong></td><td>Compilation time overhead must be justified</td></tr>
+  </table>
+</div>
+
+<h3>Organization of the Code Optimizer</h3>
+<div class="diagram-wrap">
+<svg viewBox="0 0 700 120" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,sans-serif" font-size="13">
+  <!-- Boxes -->
+  <rect x="10" y="35" width="110" height="50" rx="8" fill="#e8f0fb" stroke="#1a5276" stroke-width="1.5"/>
+  <text x="65" y="57" text-anchor="middle" font-weight="700" fill="#1a5276">Front End</text>
+  <text x="65" y="73" text-anchor="middle" fill="#1a5276" font-size="11">(Source Code)</text>
+
+  <rect x="155" y="35" width="110" height="50" rx="8" fill="#fde8e8" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="210" y="57" text-anchor="middle" font-weight="700" fill="#c0392b">Control Flow</text>
+  <text x="210" y="73" text-anchor="middle" fill="#c0392b" font-size="11">Analysis</text>
+
+  <rect x="300" y="35" width="110" height="50" rx="8" fill="#fde8e8" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="355" y="57" text-anchor="middle" font-weight="700" fill="#c0392b">Data Flow</text>
+  <text x="355" y="73" text-anchor="middle" fill="#c0392b" font-size="11">Analysis</text>
+
+  <rect x="445" y="35" width="110" height="50" rx="8" fill="#e8f5e9" stroke="#2c7a4b" stroke-width="1.5"/>
+  <text x="500" y="57" text-anchor="middle" font-weight="700" fill="#2c7a4b">Transform-</text>
+  <text x="500" y="73" text-anchor="middle" fill="#2c7a4b" font-size="11">ations</text>
+
+  <rect x="590" y="35" width="100" height="50" rx="8" fill="#e8f0fb" stroke="#1a5276" stroke-width="1.5"/>
+  <text x="640" y="57" text-anchor="middle" font-weight="700" fill="#1a5276">Code</text>
+  <text x="640" y="73" text-anchor="middle" fill="#1a5276" font-size="11">Generator</text>
+
+  <!-- Arrows -->
+  <line x1="120" y1="60" x2="153" y2="60" stroke="#666" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="265" y1="60" x2="298" y2="60" stroke="#666" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="410" y1="60" x2="443" y2="60" stroke="#666" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="555" y1="60" x2="588" y2="60" stroke="#666" stroke-width="2" marker-end="url(#arr)"/>
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#666"/>
+    </marker>
+  </defs>
+  <!-- Label -->
+  <text x="350" y="108" text-anchor="middle" fill="#7a6f66" font-size="11" font-style="italic">Code Optimizer Pipeline</text>
+</svg>
+</div>
+
+<h3>Types of Optimization</h3>
+<div class="grid-2">
+  <div class="card">
+    <h4>🏠 Local Optimization</h4>
+    <p>Applied <strong>within a single basic block</strong>. Fastest to compute, done first.</p>
+    <p><em>Example: Replacing <code>x=x+0</code> with nothing.</em></p>
+  </div>
+  <div class="card">
+    <h4>🌐 Global Optimization</h4>
+    <p>Applied <strong>across multiple basic blocks</strong>. Requires data flow analysis.</p>
+    <p><em>Example: Moving a loop-invariant computation outside a loop.</em></p>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 2: PRINCIPAL SOURCES -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="principal">
+<h2><span class="num">2</span> Principal Sources of Optimization</h2>
+
+<div class="mnemonic">
+  <div class="mnemonic-title">🔑 Mnemonic: "CC DD CI"</div>
+  <strong>C</strong>ommon Subexpression Elimination · <strong>C</strong>opy Propagation · <strong>D</strong>ead Code Elimination · <strong>C</strong>onstant Folding / Induction Variable Elimination
+</div>
+
+<p>There are two major categories:</p>
+<div class="grid-2">
+  <div class="card">
+    <span class="tag tag-blue">Category 1</span>
+    <h4>Function Preserving Transformations</h4>
+    <ul>
+      <li>Common Subexpression Elimination</li>
+      <li>Copy Propagation</li>
+      <li>Dead Code Elimination</li>
+      <li>Constant Folding</li>
+    </ul>
+  </div>
+  <div class="card">
+    <span class="tag tag-green">Category 2</span>
+    <h4>Loop Optimizations</h4>
+    <ul>
+      <li>Code Motion</li>
+      <li>Induction Variable Elimination</li>
+      <li>Reduction in Strength</li>
+    </ul>
+  </div>
+</div>
+
+<!-- CSE -->
+<div class="tech-card tc-red" id="cse">
+  <div class="tech-card-header">🔁 1. Common Subexpression Elimination (CSE)</div>
+  <div class="tech-card-body">
+    <div class="def">
+      <strong>Definition:</strong> If an expression was <em>previously computed</em> and the values of its variables have <em>not changed</em>, reuse the result instead of recomputing it.
+    </div>
+    <div class="intuition">
+      <div class="intuition-title">🧠 Intuition</div>
+      If you already calculated <code>4 * i</code> earlier in the same block, why calculate it again? Store it in a temp variable and reuse it!
+    </div>
+    <h4>Two conditions for CSE:</h4>
+    <ol>
+      <li>The expression was <strong>previously computed</strong>.</li>
+      <li>The <strong>values of variables have not changed</strong> since that computation.</li>
+    </ol>
+
+    <div class="example">
+      <div class="ex-title">📝 Example 1 — Simple CSE</div>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">a = b + c
+d = b + c   ← same as above!
+e = a * d</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">t = b + c
+a = t
+d = t       ← reuse t
+e = a * d</div>
+      </div>
+      <p><code>b+c</code> is computed only once. <code>d</code> gets the same value via <code>t</code>.</p>
+    </div>
+
+    <div class="example">
+      <div class="ex-title">📝 Example 2 — Classic from Textbook</div>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">a = b + c
+b = a - d
+c = b + c   ← b changed! not CSE
+d = a - d   ← CSE with line 2</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">a = b + c
+b = a - d
+c = b + c
+d = b       ← reuse b (which = a-d)</div>
+      </div>
+      <p>⚠️ <code>b+c</code> is NOT a common subexpression because <code>b</code> changed on line 2. But <code>a-d</code> IS a common subexpression!</p>
+    </div>
+
+    <div class="example">
+      <div class="ex-title">📝 Example 3 — Loop context (from notes)</div>
+      <p>In block B5 of a flow graph, both <code>t7 := 4*i</code> and <code>t10 := 4*j</code> appear redundantly. After CSE:</p>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">t6 := 4*i
+x := a[t6]
+t7 := 4*i    ← same as t6!
+t8 := 4*j
+t9 := a[t8]
+a[t7] := t9
+t10 := 4*j   ← same as t8!
+a[t10] := x</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">t6 := 4*i
+x := a[t6]
+             ← t7 removed
+t8 := 4*j
+t9 := a[t8]
+a[t6] := t9  ← use t6
+             ← t10 removed
+a[t8] := x   ← use t8</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COPY PROPAGATION -->
+<div class="tech-card tc-blue" id="copy">
+  <div class="tech-card-header">📋 2. Copy Propagation</div>
+  <div class="tech-card-body">
+    <div class="def">
+      <strong>Definition:</strong> After a copy statement <code>f := g</code>, replace subsequent uses of <code>f</code> with <code>g</code> (wherever <code>f</code> is not redefined and <code>g</code> is still available).
+    </div>
+    <div class="intuition">
+      <div class="intuition-title">🧠 Intuition</div>
+      If you set <code>f = g</code>, then whenever you see <code>f</code> later, you can just say <code>g</code> instead — one fewer variable to track!
+    </div>
+
+    <div class="example">
+      <div class="ex-title">📝 Example</div>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">f = g
+...
+y = f * 2    ← f is just g</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">f = g
+...
+y = g * 2    ← propagated g</div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="ex-title">📝 Example — After CSE introduces copies</div>
+      <p>CSE often introduces copy statements. Consider:</p>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">x = a
+y = x * b
+z = x * c</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">x = a
+y = a * b    ← x replaced by a
+z = a * c    ← x replaced by a</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>⚠️ Important constraint:</strong> Copy propagation is valid only if neither <code>f</code> nor <code>g</code> is redefined between the copy statement and the use point.
+    </div>
+  </div>
+</div>
+
+<!-- DEAD CODE -->
+<div class="tech-card tc-green" id="dead">
+  <div class="tech-card-header">💀 3. Dead Code Elimination</div>
+  <div class="tech-card-body">
+    <div class="def">
+      <strong>Live variable:</strong> A variable is <em>live</em> at a point if its value may be used later.<br>
+      <strong>Dead variable:</strong> A variable whose value is <em>never used</em> after being assigned.
+    </div>
+    <div class="intuition">
+      <div class="intuition-title">🧠 Intuition</div>
+      If you do a calculation but <em>never use</em> the result, that computation is wasted effort — remove it entirely!
+    </div>
+
+    <div class="example">
+      <div class="ex-title">📝 Example 1</div>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">x = a + b     ← x never used again!
+y = c * d
+return y</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">             ← x=a+b deleted!
+y = c * d
+return y</div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="ex-title">📝 Example 2 — From textbook</div>
+      <p>In block B5 after copy propagation, <code>x := t3</code> is dead because <code>x</code> is overwritten before being used.</p>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">x := t3      ← dead!
+a[t2] := t5
+a[t4] := x
+goto B2</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">             ← removed
+a[t2] := t5
+a[t4] := x
+goto B2</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONSTANT FOLDING -->
+<div class="tech-card tc-purple" id="constant">
+  <div class="tech-card-header">🔢 4. Constant Folding</div>
+  <div class="tech-card-body">
+    <div class="def">
+      <strong>Definition:</strong> Evaluate constant expressions at <em>compile time</em> and replace them with their computed values.
+    </div>
+    <div class="intuition">
+      <div class="intuition-title">🧠 Intuition</div>
+      Why compute <code>3.14159 * 2</code> every time the program runs? The compiler can calculate it once: <code>6.28318</code>.
+    </div>
+
+    <div class="example">
+      <div class="ex-title">📝 Examples</div>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">PI = 22/7
+area = PI * r * r
+
+x = 2 * 3 + 1</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">PI = 3.14        ← folded!
+area = 3.14 * r * r
+
+x = 7            ← folded!</div>
+      </div>
+      <p>Also applies to boolean/relational constants: <code>if 0 != 1</code> → always true → branch simplified.</p>
+    </div>
+  </div>
+</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 3: BASIC BLOCKS -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="basic-blocks">
+<h2><span class="num">3</span> Basic Blocks &amp; Flow Graphs</h2>
+
+<div class="def">
+  <strong>Basic Block:</strong> A maximal sequence of consecutive statements where control enters at the <em>beginning</em> and exits at the <em>end</em> — no branches in or out in the middle.
+</div>
+
+<div class="intuition">
+  <div class="intuition-title">🧠 Intuition</div>
+  A basic block is like a straight road — you enter at one end and drive through without any turns or exits until you reach the end. A flow graph then connects these roads with junctions (conditionals, gotos).
+</div>
+
+<h3>Algorithm to Identify Basic Blocks</h3>
+<div class="highlight-box">
+  <strong>Step 1:</strong> Find all <em>leaders</em> (first statements of basic blocks):<br>
+  &nbsp;&nbsp;① The first statement of the program is a leader.<br>
+  &nbsp;&nbsp;② Any statement that is the target of a conditional or unconditional goto is a leader.<br>
+  &nbsp;&nbsp;③ Any statement immediately following a goto or conditional goto is a leader.<br><br>
+  <strong>Step 2:</strong> Each leader starts a block that runs until (but not including) the next leader.
+</div>
+
+<div class="example">
+  <div class="ex-title">📝 Example — Find Basic Blocks (Exam-style)</div>
+  <p>Given three-address code:</p>
+  <div class="code-block">10  i = 0
+20  a = n - 3
+30  if i &lt; a goto 50      ← goto target: 50 is leader; next stmt (40) is leader
+40  goto 170               ← next stmt would be leader
+50  b = i - 4
+60  x = a + 2
+70  p = x
+80  c = p + b
+90  d = m[c]
+100 e = d - 2
+110 f = i - 4
+120 g = p + f
+130 m[g] = e
+140 i = i + 1
+150 a = n - 3
+160 if i &lt; a goto 50      ← goto target: 50 already leader
+170 ----</div>
+
+  <p>Leaders: <strong>10</strong> (first), <strong>40</strong> (after conditional), <strong>50</strong> (target), <strong>170</strong> (target of goto 170)</p>
+  <table>
+    <tr><th>Block</th><th>Statements</th></tr>
+    <tr><td>B1</td><td>10, 20, 30</td></tr>
+    <tr><td>B2</td><td>40</td></tr>
+    <tr><td>B3</td><td>50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160</td></tr>
+    <tr><td>B4</td><td>170</td></tr>
+  </table>
+</div>
+
+<h3>Flow Graph</h3>
+<p>A <strong>flow graph</strong> connects basic blocks with directed edges:</p>
+<ul>
+  <li>Block A → Block B if execution can flow from the end of A to the start of B</li>
+  <li>Edges come from <em>sequential flow</em> or from <em>goto/branch</em> targets</li>
+</ul>
+
+<div class="diagram-wrap">
+<svg viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,sans-serif" font-size="12">
+  <defs>
+    <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+  </defs>
+  <!-- B1 -->
+  <rect x="100" y="10" width="120" height="50" rx="8" fill="#e8f0fb" stroke="#1a5276" stroke-width="2"/>
+  <text x="160" y="32" text-anchor="middle" font-weight="700" fill="#1a5276">B1</text>
+  <text x="160" y="50" text-anchor="middle" fill="#1a5276" font-size="10">10, 20, 30</text>
+
+  <!-- B2 -->
+  <rect x="10" y="110" width="100" height="40" rx="8" fill="#fde8e8" stroke="#c0392b" stroke-width="2"/>
+  <text x="60" y="128" text-anchor="middle" font-weight="700" fill="#c0392b">B2</text>
+  <text x="60" y="143" text-anchor="middle" fill="#c0392b" font-size="10">40 (goto 170)</text>
+
+  <!-- B3 -->
+  <rect x="150" y="110" width="120" height="50" rx="8" fill="#e8f5e9" stroke="#2c7a4b" stroke-width="2"/>
+  <text x="210" y="132" text-anchor="middle" font-weight="700" fill="#2c7a4b">B3</text>
+  <text x="210" y="148" text-anchor="middle" fill="#2c7a4b" font-size="10">50–160 (loop body)</text>
+
+  <!-- B4 -->
+  <rect x="100" y="210" width="120" height="40" rx="8" fill="#f5eafb" stroke="#7d3c98" stroke-width="2"/>
+  <text x="160" y="228" text-anchor="middle" font-weight="700" fill="#7d3c98">B4</text>
+  <text x="160" y="243" text-anchor="middle" fill="#7d3c98" font-size="10">170 (end)</text>
+
+  <!-- Arrows B1 → B2 (false branch) -->
+  <line x1="130" y1="60" x2="80" y2="108" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <text x="90" y="88" fill="#c0392b" font-size="10">false</text>
+
+  <!-- Arrows B1 → B3 (true branch) -->
+  <line x1="190" y1="60" x2="200" y2="108" stroke="#2c7a4b" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <text x="198" y="88" fill="#2c7a4b" font-size="10">true</text>
+
+  <!-- B2 → B4 -->
+  <line x1="60" y1="150" x2="130" y2="208" stroke="#7d3c98" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  <!-- B3 → B3 (loop back) -->
+  <path d="M270,130 Q310,130 310,90 Q310,50 210,50" stroke="#2c7a4b" fill="none" stroke-width="1.5" marker-end="url(#arr2)" stroke-dasharray="5,3"/>
+  <text x="295" y="95" fill="#2c7a4b" font-size="10" text-anchor="middle">loop</text>
+
+  <!-- B3 → B4 -->
+  <line x1="210" y1="160" x2="180" y2="208" stroke="#7d3c98" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  <text x="160" y="258" text-anchor="middle" fill="#7a6f66" font-size="10" font-style="italic">Flow Graph Example</text>
+</svg>
+</div>
+
+<h3>Structure Preserving Transformations on Basic Blocks</h3>
+<div class="grid-2">
+  <div class="card">
+    <span class="tag tag-red">Type 1</span>
+    <h4>Structure Preserving</h4>
+    <ul>
+      <li>Common subexpression elimination</li>
+      <li>Dead code elimination</li>
+      <li>Renaming of temporary variables</li>
+      <li>Interchange of independent statements</li>
+    </ul>
+  </div>
+  <div class="card">
+    <span class="tag tag-blue">Type 2</span>
+    <h4>Algebraic Identities</h4>
+    <p>Use mathematical identities to simplify:</p>
+    <div class="code-block" style="font-size:0.78rem">x + 0  =  x
+x * 1  =  x
+x ** 2 =  x * x    (cheaper!)
+x / 2  =  x * 0.5</div>
+  </div>
+</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 4: DAG -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="dag">
+<h2><span class="num">4</span> DAG Representation of Basic Blocks</h2>
+
+<div class="def">
+  <strong>DAG (Directed Acyclic Graph):</strong> A graph representation of a basic block where nodes represent values/operations and edges represent dependencies. DAGs detect common subexpressions automatically!
+</div>
+
+<div class="intuition">
+  <div class="intuition-title">🧠 Intuition</div>
+  A DAG is like a recipe dependency chart. If two dishes need the same ingredient preparation, you draw one node for that preparation and point both dishes to it — no duplication!
+</div>
+
+<h3>DAG Construction Rules</h3>
+<div class="highlight-box">
+  For each statement <code>x := y op z</code>:
+  <ol>
+    <li>Find or create nodes for <code>y</code> and <code>z</code></li>
+    <li>Check if there's already a node for <code>y op z</code> — if yes, that's the CSE node!</li>
+    <li>If no, create a new internal node labeled <code>op</code> with children <code>y</code>, <code>z</code></li>
+    <li>Label this node with <code>x</code> (remove <code>x</code> from any previous node)</li>
+  </ol>
+</div>
+
+<div class="example">
+  <div class="ex-title">📝 Example — Build DAG for basic block</div>
+  <p>Basic block:</p>
+  <div class="code-block">a := b + c
+b := a - d
+c := b + c
+d := a - d</div>
+
+  <p><strong>Step-by-step DAG construction:</strong></p>
+  <div class="card">
+    <table>
+      <tr><th>Statement</th><th>Action</th><th>CSE?</th></tr>
+      <tr><td><code>a := b + c</code></td><td>Create node (+) with children b, c. Label it <strong>a</strong></td><td>No</td></tr>
+      <tr><td><code>b := a - d</code></td><td>Create node (-) with children a, d. Label it <strong>b</strong></td><td>No</td></tr>
+      <tr><td><code>c := b + c</code></td><td>Create node (+) with children b(new), c. Label it <strong>c</strong></td><td>No — b changed!</td></tr>
+      <tr><td><code>d := a - d</code></td><td>Node (a-d) already exists! Label it <strong>d</strong> too</td><td>✅ YES — CSE found!</td></tr>
+    </table>
+  </div>
+
+  <div class="diagram-wrap">
+  <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,sans-serif" font-size="13">
+    <defs>
+      <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+      </marker>
+    </defs>
+    <!-- Leaf nodes: b, c, d -->
+    <circle cx="60" cy="180" r="22" fill="#e8f0fb" stroke="#1a5276" stroke-width="2"/>
+    <text x="60" y="185" text-anchor="middle" font-weight="700" fill="#1a5276">b</text>
+
+    <circle cx="140" cy="180" r="22" fill="#e8f0fb" stroke="#1a5276" stroke-width="2"/>
+    <text x="140" y="185" text-anchor="middle" font-weight="700" fill="#1a5276">c</text>
+
+    <circle cx="310" cy="180" r="22" fill="#e8f0fb" stroke="#1a5276" stroke-width="2"/>
+    <text x="310" y="185" text-anchor="middle" font-weight="700" fill="#1a5276">d</text>
+
+    <!-- Node: a = b+c -->
+    <circle cx="100" cy="110" r="22" fill="#fde8e8" stroke="#c0392b" stroke-width="2"/>
+    <text x="100" y="107" text-anchor="middle" fill="#c0392b" font-size="11">+</text>
+    <text x="100" y="122" text-anchor="middle" font-weight="700" fill="#c0392b" font-size="10">a</text>
+    <line x1="85" y1="128" x2="70" y2="158" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arr3)"/>
+    <line x1="115" y1="128" x2="132" y2="158" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+    <!-- Node: b2 = a-d (also d's result) -->
+    <circle cx="220" cy="110" r="22" fill="#e8f5e9" stroke="#2c7a4b" stroke-width="2"/>
+    <text x="220" y="107" text-anchor="middle" fill="#2c7a4b" font-size="11">−</text>
+    <text x="220" y="122" text-anchor="middle" font-weight="700" fill="#2c7a4b" font-size="10">b, d</text>
+    <line x1="207" y1="128" x2="115" y2="128" stroke="#2c7a4b" stroke-width="1.5" marker-end="url(#arr3)"/>
+    <line x1="235" y1="128" x2="295" y2="158" stroke="#2c7a4b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+    <!-- Node: c2 = b2+c -->
+    <circle cx="170" cy="40" r="22" fill="#f5eafb" stroke="#7d3c98" stroke-width="2"/>
+    <text x="170" y="37" text-anchor="middle" fill="#7d3c98" font-size="11">+</text>
+    <text x="170" y="52" text-anchor="middle" font-weight="700" fill="#7d3c98" font-size="10">c</text>
+    <line x1="157" y1="58" x2="230" y2="93" stroke="#7d3c98" stroke-width="1.5" marker-end="url(#arr3)"/>
+    <line x1="158" y1="52" x2="148" y2="162" stroke="#7d3c98" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr3)"/>
+
+    <!-- CSE label -->
+    <rect x="248" y="92" width="100" height="22" rx="5" fill="#fff8e1" stroke="#f59f00" stroke-width="1.5"/>
+    <text x="298" y="107" text-anchor="middle" fill="#b7791f" font-size="11" font-weight="700">CSE: b,d share!</text>
+
+    <text x="200" y="215" text-anchor="middle" fill="#7a6f66" font-size="11" font-style="italic">DAG for the basic block</text>
+  </svg>
+  </div>
+  <p>The node labeled <strong>b, d</strong> shows that both <code>b</code> and <code>d</code> hold the value of <code>a - d</code>. This is the <strong>common subexpression</strong> detected by the DAG!</p>
+</div>
+
+<h3>Benefits of DAG</h3>
+<ul>
+  <li>Automatically detects <strong>common subexpressions</strong></li>
+  <li>Enables <strong>dead code elimination</strong> (nodes with no outgoing references)</li>
+  <li>Determines <strong>which variables are computed</strong> in the block</li>
+  <li>Allows <strong>reordering</strong> of independent computations</li>
+</ul>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 5: PEEPHOLE -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="peephole">
+<h2><span class="num">5</span> Peephole Optimization</h2>
+
+<div class="def">
+  <strong>Peephole Optimization:</strong> A local optimization technique that examines a small "window" (peephole) of target code instructions and replaces inefficient instruction sequences with better ones.
+</div>
+
+<div class="intuition">
+  <div class="intuition-title">🧠 Intuition</div>
+  Imagine proofreading a document through a magnifying glass — you see only a few lines at a time, but you spot and fix local redundancies like "the the" or "is is". Peephole optimization does the same for machine code!
+</div>
+
+<div class="mnemonic">
+  <div class="mnemonic-title">🔑 Mnemonic: "R-FAS-UR"</div>
+  <strong>R</strong>edundant Instruction Elimination · <strong>F</strong>low-of-control Optimization · <strong>A</strong>lgebraic Simplification · <strong>S</strong>trength Reduction · <strong>U</strong>se of Machine Idioms · <strong>R</strong>emove Unreachable Code
+</div>
+
+<!-- 6 techniques -->
+<div class="tech-card tc-red">
+  <div class="tech-card-header">1️⃣ Redundant Instruction Elimination</div>
+  <div class="tech-card-body">
+    <div class="ba-grid">
+      <div class="ba-box ba-before">MOV R0, a      ← store a into R0
+MOV a, R0      ← store R0 back into a
+                  (REDUNDANT!)</div>
+      <div class="arrow">⇒</div>
+      <div class="ba-box ba-after">MOV R0, a      ← keep only this
+                  second instruction
+                  deleted!</div>
+    </div>
+    <p>The second instruction reloads what was just stored. Since R0 already has the value of <code>a</code>, the second MOV is useless.</p>
+  </div>
+</div>
+
+<div class="tech-card tc-blue">
+  <div class="tech-card-header">2️⃣ Flow-of-Control Optimization</div>
+  <div class="tech-card-body">
+    <div class="ba-grid">
+      <div class="ba-box ba-before">goto L1
+...
+L1: goto L2      ← chain of jumps</div>
+      <div class="arrow">⇒</div>
+      <div class="ba-box ba-after">goto L2          ← skip to final target
+...
+L1: goto L2</div>
+    </div>
+    <p>Eliminate jump chains — jump directly to the final destination.</p>
+  </div>
+</div>
+
+<div class="tech-card tc-green">
+  <div class="tech-card-header">3️⃣ Algebraic Simplification</div>
+  <div class="tech-card-body">
+    <div class="ba-grid">
+      <div class="ba-box ba-before">x = x + 0     ← useless
+y = y * 1     ← useless
+z = z ** 1    ← useless</div>
+      <div class="arrow">⇒</div>
+      <div class="ba-box ba-after">              ← all three deleted!
+
+
+
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="tech-card tc-orange">
+  <div class="tech-card-header">4️⃣ Use of Machine Idioms</div>
+  <div class="tech-card-body">
+    <p>Modern CPUs have special instructions for common patterns like increment/decrement. Use them!</p>
+    <div class="ba-grid">
+      <div class="ba-box ba-before">a = a + 1    ← generic add</div>
+      <div class="arrow">⇒</div>
+      <div class="ba-box ba-after">INC a        ← hardware increment!</div>
+    </div>
+    <p>Auto-increment/decrement addressing modes also help with stack push/pop operations.</p>
+  </div>
+</div>
+
+<div class="tech-card tc-purple">
+  <div class="tech-card-header">5️⃣ Unreachable Code Elimination</div>
+  <div class="tech-card-body">
+    <div class="ba-grid">
+      <div class="ba-box ba-before">#define DEBUG 0
+...
+if(DEBUG)
+  print("info")   ← never runs!</div>
+      <div class="arrow">⇒</div>
+      <div class="ba-box ba-after">               ← entire debug
+                     print removed!</div>
+    </div>
+    <p>After constant propagation substitutes <code>DEBUG=0</code>, the condition becomes <code>if(0)</code> which is always false — the block is unreachable and deleted.</p>
+    <div class="code-block" style="font-size:0.78rem">Original:    if debug=1 goto L1
+             goto L2
+L1:          print debugging info
+L2: ...
+
+After CP:    if 0≠1 goto L2
+             print debugging info ← unreachable!
+L2: ...
+
+Final:       goto L2              ← all simplified</div>
+  </div>
+</div>
+
+<div class="tech-card tc-red">
+  <div class="tech-card-header">6️⃣ Reduction in Strength (Peephole)</div>
+  <div class="tech-card-body">
+    <div class="ba-grid">
+      <div class="ba-box ba-before">x = y ** 2     ← function call!</div>
+      <div class="arrow">⇒</div>
+      <div class="ba-box ba-after">x = y * y      ← single multiply!</div>
+    </div>
+    <p>Replace expensive operations (exponentiation, division) with cheaper equivalents (multiplication).</p>
+  </div>
+</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 6: LOOPS -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="loops">
+<h2><span class="num">6</span> Loops in Flow Graphs</h2>
+
+<div class="intuition">
+  <div class="intuition-title">🧠 Why loops matter most?</div>
+  A loop body that runs 10,000 times — even a tiny saving per iteration (like removing one multiplication) saves 10,000 operations! This is why loop optimization gives the biggest performance gains.
+</div>
+
+<h3>Dominators</h3>
+<div class="def">
+  <strong>Dominator:</strong> Node <code>d</code> dominates node <code>n</code> (written <code>d dom n</code>) if <em>every path</em> from the entry node to <code>n</code> passes through <code>d</code>.
+</div>
+
+<div class="example">
+  <div class="ex-title">📝 Example — Dominator Tree</div>
+  <p>For a flow graph with nodes 1–10, the dominator relationships form a tree. Node 1 dominates all (it's the entry). Node 7 dominates 7, 8, 9, 10 (only path to those goes through 7).</p>
+  <div class="diagram-wrap">
+  <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,sans-serif" font-size="13">
+    <defs><marker id="arr4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#555"/></marker></defs>
+    <!-- Nodes -->
+    <circle cx="150" cy="20" r="16" fill="#fde8e8" stroke="#c0392b" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-weight="700" fill="#c0392b">1</text>
+
+    <circle cx="80" cy="70" r="16" fill="#e8f0fb" stroke="#1a5276" stroke-width="2"/>
+    <text x="80" y="75" text-anchor="middle" font-weight="700" fill="#1a5276">2</text>
+
+    <circle cx="150" cy="70" r="16" fill="#e8f0fb" stroke="#1a5276" stroke-width="2"/>
+    <text x="150" y="75" text-anchor="middle" font-weight="700" fill="#1a5276">3</text>
+
+    <circle cx="150" cy="120" r="16" fill="#e8f5e9" stroke="#2c7a4b" stroke-width="2"/>
+    <text x="150" y="125" text-anchor="middle" font-weight="700" fill="#2c7a4b">4</text>
+
+    <circle cx="80" cy="165" r="16" fill="#f5eafb" stroke="#7d3c98" stroke-width="2"/>
+    <text x="80" y="170" text-anchor="middle" font-weight="700" fill="#7d3c98">5</text>
+
+    <circle cx="150" cy="165" r="16" fill="#f5eafb" stroke="#7d3c98" stroke-width="2"/>
+    <text x="150" y="170" text-anchor="middle" font-weight="700" fill="#7d3c98">6</text>
+
+    <circle cx="220" cy="165" r="16" fill="#f5eafb" stroke="#7d3c98" stroke-width="2"/>
+    <text x="220" y="170" text-anchor="middle" font-weight="700" fill="#7d3c98">7</text>
+
+    <!-- Edges -->
+    <line x1="140" y1="34" x2="92" y2="56" stroke="#555" stroke-width="1.5" marker-end="url(#arr4)"/>
+    <line x1="150" y1="36" x2="150" y2="54" stroke="#555" stroke-width="1.5" marker-end="url(#arr4)"/>
+    <line x1="150" y1="86" x2="150" y2="104" stroke="#555" stroke-width="1.5" marker-end="url(#arr4)"/>
+    <line x1="140" y1="134" x2="92" y2="151" stroke="#555" stroke-width="1.5" marker-end="url(#arr4)"/>
+    <line x1="150" y1="136" x2="150" y2="149" stroke="#555" stroke-width="1.5" marker-end="url(#arr4)"/>
+    <line x1="160" y1="134" x2="210" y2="151" stroke="#555" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+    <text x="150" y="195" text-anchor="middle" fill="#7a6f66" font-size="10" font-style="italic">Dominator Tree</text>
+  </svg>
+  </div>
+</div>
+
+<h3>Natural Loops</h3>
+<div class="def">
+  A <strong>natural loop</strong> of a back edge <code>n → d</code> is the set of all nodes that can reach <code>n</code> without going through <code>d</code>, plus <code>d</code> itself. <code>d</code> is the <em>loop header</em>.
+</div>
+
+<div class="highlight-box">
+  <strong>Back Edge:</strong> An edge <code>a → b</code> where <code>b</code> dominates <code>a</code>. Back edges identify loops!<br><br>
+  <strong>Two essential properties of a loop:</strong><br>
+  1. Single entry point called the <em>header</em> (dominates all nodes in the loop)<br>
+  2. At least one way to iterate (path back to header)
+</div>
+
+<!-- CODE MOTION -->
+<div class="tech-card tc-green" id="code-motion">
+  <div class="tech-card-header">🚀 Loop Optimization 1: Code Motion</div>
+  <div class="tech-card-body">
+    <div class="def">
+      <strong>Code Motion:</strong> Move a <em>loop-invariant computation</em> (one that gives the same result regardless of loop iterations) to the <em>preheader</em> — before the loop.
+    </div>
+    <div class="intuition">
+      <div class="intuition-title">🧠 Intuition</div>
+      If you're computing the same thing every iteration (like <code>limit - 2</code>), compute it <em>once before the loop</em> and store it. Don't repeat unchanged work!
+    </div>
+    <div class="example">
+      <div class="ex-title">📝 Example</div>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">while (i &lt;= limit - 2)
+{
+   // loop body
+   i++;
+}</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">t = limit - 2;    ← moved out!
+while (i &lt;= t)
+{
+   // loop body
+   i++;
+}</div>
+      </div>
+      <p><code>limit - 2</code> is computed once instead of every iteration. If the loop runs 1000 times, we save 999 subtractions!</p>
+    </div>
+    <div class="highlight-box">
+      <strong>Condition for Code Motion:</strong> The expression must be <em>loop-invariant</em> — none of its variables change value inside the loop.
+    </div>
+  </div>
+</div>
+
+<!-- INDUCTION VARIABLES -->
+<div class="tech-card tc-orange" id="induction">
+  <div class="tech-card-header">📉 Loop Optimization 2: Induction Variables &amp; Reduction in Strength</div>
+  <div class="tech-card-body">
+    <div class="def">
+      <strong>Induction Variable:</strong> A variable <code>x</code> that changes by a constant amount each loop iteration (e.g., <code>i = i + 1</code>). Any variable linearly related to an induction variable is also an induction variable.
+    </div>
+    <div class="def">
+      <strong>Reduction in Strength:</strong> Replace an expensive operation (like multiplication) with a cheaper one (like addition) by exploiting the induction variable relationship.
+    </div>
+    <div class="intuition">
+      <div class="intuition-title">🧠 Intuition</div>
+      If <code>i</code> increases by 1 each time, then <code>4*i</code> increases by 4 each time. Instead of doing <code>t = 4*i</code> (a multiply) every iteration, maintain <code>t</code> directly by adding 4: <code>t = t + 4</code>. Additions are faster than multiplications!
+    </div>
+
+    <div class="example">
+      <div class="ex-title">📝 Example — Strength Reduction on 4*j</div>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">// Block B3 (loop)
+j := j - 1
+t4 := 4 * j      ← multiply every iter!
+t5 := a[t4]
+if t5 &gt; v goto B3</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">// After strength reduction
+j := j - 1
+t4 := t4 - 4     ← just subtract! 
+t5 := a[t4]
+if t5 &gt; v goto B3</div>
+      </div>
+      <p>Since <code>j</code> decreases by 1 each time, <code>4*j</code> decreases by 4 each time. Replace multiply with subtract. <code>t4</code> is initialized before the loop as <code>t4 := 4*j</code> (done only once).</p>
+    </div>
+
+    <div class="example">
+      <div class="ex-title">📝 Example — Induction Variable Elimination</div>
+      <p>After strength reduction, if <code>i</code> and <code>j</code> are only used to control the loop test (comparing with each other via <code>t2 &gt;= t4</code>), the original variables <code>i</code> and <code>j</code> become dead — eliminate them!</p>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">// B4 test
+if i &gt;= j goto B6    ← uses i and j</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">if t2 &gt;= t4 goto B6  ← use t2,t4 instead
+                              i and j are now dead!</div>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>Technique</th><th>What changes</th><th>Saving</th></tr>
+      <tr><td>Code Motion</td><td>Loop-invariant expr moved out</td><td>N × (cost of expr)</td></tr>
+      <tr><td>Strength Reduction</td><td>Multiply → Add per iteration</td><td>N × (multiply - add cost)</td></tr>
+      <tr><td>Induction Var Elim.</td><td>Remove redundant variables</td><td>N × (var update cost)</td></tr>
+    </table>
+  </div>
+</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 7: DATA FLOW -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="dataflow">
+<h2><span class="num">7</span> Introduction to Data Flow Analysis</h2>
+
+<div class="def">
+  <strong>Data Flow Analysis:</strong> A framework for collecting information about the flow of data values through a program. Used to detect reaching definitions, live variables, available expressions, etc.
+</div>
+
+<div class="intuition">
+  <div class="intuition-title">🧠 Intuition</div>
+  Think of data flow analysis like tracking water through pipes. You want to know: at any point in the program, which "definitions" (assignments) of a variable can "flow" to reach that point without being "blocked" (overwritten)?
+</div>
+
+<h3>Key Concepts</h3>
+
+<div class="grid-2">
+  <div class="card">
+    <h4>📌 Points</h4>
+    <p>A <strong>point</strong> is a position between two adjacent statements, or before the first / after the last statement in a basic block.</p>
+  </div>
+  <div class="card">
+    <h4>🛤️ Paths</h4>
+    <p>A <strong>path</strong> from P1 to Pn is a sequence of consecutive points through the flow graph.</p>
+  </div>
+</div>
+
+<h3>Reaching Definitions</h3>
+<div class="def">
+  A definition <code>d</code> of variable <code>x</code> <strong>reaches</strong> a point <code>p</code> if there exists a path from <code>d</code> to <code>p</code> along which <code>x</code> is not redefined.
+</div>
+
+<h3>Data Flow Equation</h3>
+<div class="highlight-box">
+  <p>The fundamental data flow equation:</p>
+  <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:1.1rem; margin:0.5rem 0; font-weight:700; color:#1a5276;">
+    out[S] = gen[S] ∪ (in[S] − kill[S])
+  </div>
+  <table style="margin-top:0.8rem">
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td><code>out[S]</code></td><td>Definitions leaving statement S</td></tr>
+    <tr><td><code>gen[S]</code></td><td>Definitions generated by S itself</td></tr>
+    <tr><td><code>in[S]</code></td><td>Definitions arriving at S from predecessors</td></tr>
+    <tr><td><code>kill[S]</code></td><td>Definitions of the same variable killed by S</td></tr>
+  </table>
+</div>
+
+<div class="example">
+  <div class="ex-title">📝 Example — gen, kill, in, out</div>
+  <div class="code-block" style="font-size:0.8rem">Statement: d1: a = b + c
+  gen[d1]  = {d1}               // this statement defines 'a'
+  kill[d1] = Da - {d1}          // all OTHER definitions of 'a' are killed
+                                // where Da = all definitions of 'a' in the program
+
+  out[d1]  = {d1} ∪ (in[d1] - kill[d1])</div>
+</div>
+
+<h3>Use-Definition (UD) Chains</h3>
+<div class="def">
+  A <strong>UD-chain</strong> for a use of variable <code>x</code> is the list of all definitions of <code>x</code> that can reach that use.
+</div>
+<p>UD-chains are used to:</p>
+<ul>
+  <li>Detect loop-invariant computations (all reaching defs are outside the loop)</li>
+  <li>Perform copy propagation</li>
+  <li>Eliminate induction variables</li>
+</ul>
+
+<h3>Bit Vector Representation</h3>
+<div class="intuition">
+  <div class="intuition-title">🧠 Intuition</div>
+  Number all definitions in the program (d1, d2, d3 ...). Use a bit vector where bit i = 1 means definition di is in the set. Set union = bitwise OR. Set intersection = bitwise AND. Very efficient!
+</div>
+<div class="example">
+  <div class="ex-title">📝 Example</div>
+  <div class="code-block" style="font-size:0.8rem">4 definitions: d1, d2, d3, d4
+
+gen[B1] = {d1, d3}  →  bit vector: 1 0 1 0
+kill[B1]= {d2, d4}  →  bit vector: 0 1 0 1
+
+Union  (OR):  1 0 1 0 | 0 1 0 1 = 1 1 1 1
+Intersect(AND): 1 0 1 0 & 0 1 0 1 = 0 0 0 0</div>
+</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 8: QUESTIONS -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="questions">
+<h2><span class="num">8</span> Solved Questions &amp; Practice Q&amp;A</h2>
+
+<!-- Q1 -->
+<div class="question-block">
+  <div class="q-header">📋 Q1 — 2 Marks · Definition</div>
+  <div class="q-body">
+    <p class="q-text">What is code optimization? What are the criteria for code-improving transformations?</p>
+    <div class="step"><span class="step-num">A</span>
+      <div><strong>Code Optimization</strong> is the process of improving intermediate code so that the resulting machine code runs faster and/or uses less memory, without changing the program's output.<br><br>
+      <strong>Criteria:</strong><br>
+      1. <em>Meaning-preserving</em> — the transformation must not change what the program computes.<br>
+      2. <em>Measurably faster</em> — it must demonstrably speed up execution.<br>
+      3. <em>Worth the effort</em> — the compilation overhead must be justified.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q2 -->
+<div class="question-block">
+  <div class="q-header">📋 Q2 — 2 Marks · Definition</div>
+  <div class="q-body">
+    <p class="q-text">Define: (a) Basic Block (b) Dead Code (c) Induction Variable (d) Loop Invariant Computation</p>
+    <div class="step"><span class="step-num">A</span>
+      <div>
+        <p><strong>(a) Basic Block:</strong> A maximal sequence of consecutive three-address instructions where control enters at the beginning and leaves at the end without halt or possibility of branching.</p>
+        <p><strong>(b) Dead Code:</strong> A statement that computes a value that is never subsequently used. The variable assigned is "dead" — its value will never be read.</p>
+        <p><strong>(c) Induction Variable:</strong> A variable that changes by a constant amount (is incremented or decremented by a fixed value) every time a loop iterates. Example: <code>i = i + 1</code> makes <code>i</code> an induction variable.</p>
+        <p><strong>(d) Loop Invariant Computation:</strong> An expression inside a loop whose value does not change across loop iterations — it produces the same result every time, regardless of how many times the loop runs. Example: <code>limit - 2</code> where <code>limit</code> is not modified in the loop.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q3 -->
+<div class="question-block">
+  <div class="q-header">📋 Q3 — 5 Marks · Algorithm</div>
+  <div class="q-body">
+    <p class="q-text">Find the basic blocks and draw the flow graph for the following three-address code:<br>
+    10: i=0 &nbsp; 20: a=n-3 &nbsp; 30: if i&lt;a goto 50 &nbsp; 40: goto 170 &nbsp; 50: b=i-4 &nbsp; 60: x=a+2 &nbsp; 70: p=x &nbsp; 80: c=p+b &nbsp; 90: d=m[c] &nbsp; 100: e=d-2 &nbsp; 110: f=i-4 &nbsp; 120: g=p+f &nbsp; 130: m[g]=e &nbsp; 140: i=i+1 &nbsp; 150: a=n-3 &nbsp; 160: if i&lt;a goto 50 &nbsp; 170: ----
+    </p>
+    <div class="step"><span class="step-num">1</span><div><strong>Find Leaders</strong> using the three rules:</div></div>
+    <div class="step"><span class="step-num"></span>
+      <div>
+        <table>
+          <tr><th>Statement</th><th>Leader?</th><th>Reason</th></tr>
+          <tr><td>10: i=0</td><td>✅ Yes</td><td>First statement of program</td></tr>
+          <tr><td>40: goto 170</td><td>✅ Yes</td><td>Follows conditional (stmt 30)</td></tr>
+          <tr><td>50: b=i-4</td><td>✅ Yes</td><td>Target of "goto 50" (stmts 30 &amp; 160)</td></tr>
+          <tr><td>170: ----</td><td>✅ Yes</td><td>Target of "goto 170" (stmt 40)</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="step"><span class="step-num">2</span><div><strong>Form Basic Blocks</strong> — each block runs from one leader to just before the next:</div></div>
+    <div class="step"><span class="step-num"></span>
+      <div>
+        <table>
+          <tr><th>Block</th><th>Statements</th><th>Description</th></tr>
+          <tr><td><strong>B1</strong></td><td>10, 20, 30</td><td>Initialization + conditional branch</td></tr>
+          <tr><td><strong>B2</strong></td><td>40</td><td>Unconditional exit (goto 170)</td></tr>
+          <tr><td><strong>B3</strong></td><td>50–160</td><td>Main loop body (12 statements)</td></tr>
+          <tr><td><strong>B4</strong></td><td>170</td><td>Program end</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="step"><span class="step-num">3</span><div><strong>Draw Flow Graph</strong> edges based on control flow:</div></div>
+    <div class="step"><span class="step-num"></span>
+      <div>
+        <div class="diagram-wrap">
+        <svg viewBox="0 0 340 300" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,sans-serif" font-size="12">
+          <defs><marker id="arr5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#555"/></marker></defs>
+          <!-- B1 -->
+          <rect x="110" y="10" width="120" height="60" rx="8" fill="#e8f0fb" stroke="#1a5276" stroke-width="2"/>
+          <text x="170" y="34" text-anchor="middle" font-weight="700" fill="#1a5276">B1</text>
+          <text x="170" y="50" text-anchor="middle" fill="#1a5276" font-size="10">10: i=0, 20: a=n-3</text>
+          <text x="170" y="63" text-anchor="middle" fill="#1a5276" font-size="10">30: if i&lt;a goto 50</text>
+          <!-- B2 -->
+          <rect x="10" y="130" width="110" height="45" rx="8" fill="#fde8e8" stroke="#c0392b" stroke-width="2"/>
+          <text x="65" y="150" text-anchor="middle" font-weight="700" fill="#c0392b">B2</text>
+          <text x="65" y="166" text-anchor="middle" fill="#c0392b" font-size="10">40: goto 170</text>
+          <!-- B3 -->
+          <rect x="175" y="130" width="150" height="55" rx="8" fill="#e8f5e9" stroke="#2c7a4b" stroke-width="2"/>
+          <text x="250" y="150" text-anchor="middle" font-weight="700" fill="#2c7a4b">B3</text>
+          <text x="250" y="165" text-anchor="middle" fill="#2c7a4b" font-size="10">50–160 (loop body)</text>
+          <text x="250" y="178" text-anchor="middle" fill="#2c7a4b" font-size="10">ends: if i&lt;a goto 50</text>
+          <!-- B4 -->
+          <rect x="110" y="240" width="120" height="45" rx="8" fill="#f5eafb" stroke="#7d3c98" stroke-width="2"/>
+          <text x="170" y="260" text-anchor="middle" font-weight="700" fill="#7d3c98">B4</text>
+          <text x="170" y="276" text-anchor="middle" fill="#7d3c98" font-size="10">170: End</text>
+          <!-- Edges -->
+          <!-- B1 → B2 (false: i not < a) -->
+          <line x1="130" y1="70" x2="85" y2="128" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <text x="90" y="103" fill="#c0392b" font-size="10">false</text>
+          <!-- B1 → B3 (true: i < a) -->
+          <line x1="210" y1="70" x2="230" y2="128" stroke="#2c7a4b" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <text x="222" y="103" fill="#2c7a4b" font-size="10">true</text>
+          <!-- B2 → B4 -->
+          <line x1="65" y1="175" x2="135" y2="238" stroke="#7d3c98" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <!-- B3 → B3 (loop back: if i<a goto 50) -->
+          <path d="M325,155 Q340,120 340,80 Q340,40 232,30" stroke="#2c7a4b" fill="none" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr5)"/>
+          <text x="350" y="100" fill="#2c7a4b" font-size="10" text-anchor="middle">loop</text>
+          <!-- B3 → B4 (i >= a, exit) -->
+          <line x1="240" y1="185" x2="195" y2="238" stroke="#7d3c98" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <text x="205" y="216" fill="#7d3c98" font-size="10">exit</text>
+        </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q4 -->
+<div class="question-block">
+  <div class="q-header">📋 Q4 — 5 Marks · Optimization Techniques</div>
+  <div class="q-body">
+    <p class="q-text">Apply suitable optimization techniques and generate optimized basic blocks for the three-address code given in Q3. (Apply CSE, Copy Propagation, Dead Code Elimination)</p>
+    <div class="step"><span class="step-num">1</span><div><strong>Original B3 (loop body)</strong> — 50 to 160:</div></div>
+    <div class="step"><span class="step-num"></span>
+      <div class="code-block" style="font-size:0.78rem">50:  b = i - 4
+60:  x = a + 2
+70:  p = x          ← copy: p = x
+80:  c = p + b
+90:  d = m[c]
+100: e = d - 2
+110: f = i - 4      ← SAME as b = i-4 at line 50! → CSE!
+120: g = p + f      ← f same as b, so g = p + b → SAME as c! → CSE!
+130: m[g] = e
+140: i = i + 1
+150: a = n - 3
+160: if i &lt; a goto 50</div>
+    </div>
+    <div class="step"><span class="step-num">2</span><div><strong>Apply CSE:</strong> <code>i-4</code> computed twice (lines 50 and 110) → eliminate line 110, use <code>b</code> in place of <code>f</code>. Also <code>p+f = p+b = c</code> → eliminate line 120, use <code>c</code> in place of <code>g</code>.</div></div>
+    <div class="step"><span class="step-num">3</span><div><strong>Apply Copy Propagation:</strong> Line 70: <code>p = x</code> is a copy. Replace all uses of <code>p</code> with <code>x</code>. So <code>c = p+b</code> → <code>c = x+b</code>.</div></div>
+    <div class="step"><span class="step-num">4</span><div><strong>Apply Constant Folding on B1:</strong> <code>a = n - 3</code> appears in both B1 (line 20) and B3 (line 150). This is also a candidate for CSE across iterations.</div></div>
+    <div class="step"><span class="step-num">5</span><div><strong>Optimized B3:</strong></div></div>
+    <div class="step"><span class="step-num"></span>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">b = i - 4
+x = a + 2
+p = x
+c = p + b
+d = m[c]
+e = d - 2
+f = i - 4    ← CSE with b
+g = p + f    ← CSE with c
+m[g] = e
+i = i + 1
+a = n - 3
+if i &lt; a goto 50</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">b = i - 4
+x = a + 2
+             ← p=x eliminated (copy prop)
+c = x + b    ← p replaced by x
+d = m[c]
+e = d - 2
+             ← f=i-4 deleted (CSE→b)
+             ← g=x+b deleted (CSE→c)
+m[c] = e     ← g replaced by c
+i = i + 1
+a = n - 3
+if i &lt; a goto 50</div>
+      </div>
+      <p>Saved: 3 instructions per iteration. If loop runs N times → 3N instruction savings!</p>
+    </div>
+  </div>
+</div>
+
+<!-- Q5 -->
+<div class="question-block">
+  <div class="q-header">📋 Q5 — 2 Marks · Short Answer</div>
+  <div class="q-body">
+    <p class="q-text">What is Code Motion? Give an example.</p>
+    <div class="step"><span class="step-num">A</span>
+      <div>
+        <p><strong>Code Motion</strong> is a loop optimization that moves a <em>loop-invariant computation</em> from inside the loop to the <em>preheader</em> (before the loop), so it is executed only once instead of every iteration.</p>
+        <div class="ba-grid">
+          <div class="ba-box ba-before">i = 0
+while (i &lt;= limit - 2)
+{
+  a[i] = 0;
+  i = i + 1;
+}
+// limit-2 recomputed every iteration!</div>
+          <div class="arrow">⇒</div>
+          <div class="ba-box ba-after">t = limit - 2    ← moved out
+i = 0
+while (i &lt;= t)   ← uses t
+{
+  a[i] = 0;
+  i = i + 1;
+}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q6 -->
+<div class="question-block">
+  <div class="q-header">📋 Q6 — 5 Marks · Peephole</div>
+  <div class="q-body">
+    <p class="q-text">Explain peephole optimization with examples for at least 4 techniques.</p>
+    <div class="step"><span class="step-num">A</span>
+      <div>
+        <p>Peephole optimization examines a small window of target code instructions and replaces inefficient patterns:</p>
+        <table>
+          <tr><th>#</th><th>Technique</th><th>Before</th><th>After</th><th>Saving</th></tr>
+          <tr><td>1</td><td>Redundant Instr.</td><td><code>MOV R0,a; MOV a,R0</code></td><td><code>MOV R0,a</code></td><td>1 instr.</td></tr>
+          <tr><td>2</td><td>Flow Control</td><td><code>goto L1; L1: goto L2</code></td><td><code>goto L2</code></td><td>Jump chain</td></tr>
+          <tr><td>3</td><td>Algebraic</td><td><code>x = x + 0</code></td><td>(removed)</td><td>1 instr.</td></tr>
+          <tr><td>4</td><td>Machine Idioms</td><td><code>a = a + 1</code></td><td><code>INC a</code></td><td>Faster instr.</td></tr>
+          <tr><td>5</td><td>Unreachable Code</td><td><code>goto L; x=1</code></td><td><code>goto L</code></td><td>Dead stmts</td></tr>
+          <tr><td>6</td><td>Strength Red.</td><td><code>x = y**2</code></td><td><code>x = y*y</code></td><td>No func call</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q7 — DAG -->
+<div class="question-block">
+  <div class="q-header">📋 Q7 — 5 Marks · DAG</div>
+  <div class="q-body">
+    <p class="q-text">Construct the DAG for the following basic block and identify common subexpressions:<br>
+    a := b + c &nbsp;|&nbsp; b := a − d &nbsp;|&nbsp; c := b + c &nbsp;|&nbsp; d := a − d</p>
+    <div class="step"><span class="step-num">1</span><div><strong>Process each statement:</strong></div></div>
+    <div class="step"><span class="step-num"></span>
+      <div>
+        <table>
+          <tr><th>Step</th><th>Statement</th><th>DAG action</th><th>CSE?</th></tr>
+          <tr><td>1</td><td><code>a := b+c</code></td><td>Create leaf nodes b, c. Create (+) node. Label: <strong>a</strong></td><td>No</td></tr>
+          <tr><td>2</td><td><code>b := a-d</code></td><td>Use node a. Create leaf d. Create (-) node. Label: <strong>b</strong></td><td>No</td></tr>
+          <tr><td>3</td><td><code>c := b+c</code></td><td>Use new b node (b has changed!). Create (+) node. Label: <strong>c</strong></td><td>No — b changed</td></tr>
+          <tr><td>4</td><td><code>d := a-d</code></td><td>Node (a-d) already exists from step 2! Attach label <strong>d</strong> to it too.</td><td>✅ YES</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="step"><span class="step-num">2</span><div><strong>Conclusion:</strong> <code>a−d</code> is the only common subexpression. Both <code>b</code> and <code>d</code> hold the same value <code>a−d</code>. So <code>d := a−d</code> can be replaced by <code>d := b</code> (using the already-computed value).</div></div>
+    <div class="step"><span class="step-num">3</span><div><strong>Optimized output from DAG:</strong></div></div>
+    <div class="step"><span class="step-num"></span>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">a := b + c
+b := a - d
+c := b + c   ← b changed
+d := a - d   ← CSE with b!</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">a := b + c
+b := a - d
+c := b + c
+d := b       ← reuse b directly!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q8 — Expression Grammar Question from image -->
+<div class="question-block">
+  <div class="q-header">📋 Q8 — 5 Marks · Expression + Optimization</div>
+  <div class="q-body">
+    <p class="q-text">For the expression <code>s = a + a * (b - c) + (b - c) * d</code>, find: (a) Three-address code, (b) Optimized code using CSE</p>
+    <div class="step"><span class="step-num">1</span><div><strong>Three-address code (unoptimized):</strong></div></div>
+    <div class="step"><span class="step-num"></span>
+      <div class="code-block" style="font-size:0.8rem">t1 = b - c
+t2 = a * t1
+t3 = a + t2
+t4 = b - c       ← SAME as t1! CSE opportunity
+t5 = t4 * d
+t6 = t3 + t5
+s  = t6</div>
+    </div>
+    <div class="step"><span class="step-num">2</span><div><strong>Apply Common Subexpression Elimination:</strong> <code>b-c</code> is computed twice (as <code>t1</code> and <code>t4</code>). Since neither <code>b</code> nor <code>c</code> changes between the two computations, this is a CSE. Replace <code>t4</code> with <code>t1</code>.</div></div>
+    <div class="step"><span class="step-num">3</span><div><strong>Optimized three-address code:</strong></div></div>
+    <div class="step"><span class="step-num"></span>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">t1 = b - c
+t2 = a * t1
+t3 = a + t2
+t4 = b - c   ← redundant
+t5 = t4 * d
+t6 = t3 + t5
+s = t6</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">t1 = b - c   ← keep
+t2 = a * t1
+t3 = a + t2
+             ← t4 removed!
+t5 = t1 * d  ← use t1 instead of t4
+t6 = t3 + t5
+s = t6</div>
+      </div>
+      <p>Saved 1 subtraction operation by detecting the CSE <code>(b-c)</code>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Q9 -->
+<div class="question-block">
+  <div class="q-header">📋 Q9 — 2 Marks · Comparison</div>
+  <div class="q-body">
+    <p class="q-text">Differentiate between local optimization and global optimization.</p>
+    <div class="step"><span class="step-num">A</span>
+      <div>
+        <table>
+          <tr><th>Aspect</th><th>Local Optimization</th><th>Global Optimization</th></tr>
+          <tr><td>Scope</td><td>Within a single basic block</td><td>Across multiple basic blocks</td></tr>
+          <tr><td>Analysis needed</td><td>Simple, no data flow</td><td>Requires data flow analysis</td></tr>
+          <tr><td>Complexity</td><td>Low</td><td>High</td></tr>
+          <tr><td>Order</td><td>Done first</td><td>Done after local</td></tr>
+          <tr><td>Example</td><td>Remove <code>x+0</code></td><td>Move loop-invariant code</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q10 -->
+<div class="question-block">
+  <div class="q-header">📋 Q10 — 2 Marks · Definition</div>
+  <div class="q-body">
+    <p class="q-text">What is Reduction in Strength? Give two examples.</p>
+    <div class="step"><span class="step-num">A</span>
+      <div>
+        <p><strong>Reduction in Strength</strong> replaces an expensive (slow) operation with a cheaper (faster) equivalent.</p>
+        <table>
+          <tr><th>Original (Expensive)</th><th>Reduced (Cheaper)</th><th>Saving</th></tr>
+          <tr><td><code>x = y ** 2</code> (exponentiation)</td><td><code>x = y * y</code> (multiply)</td><td>No function call</td></tr>
+          <tr><td><code>x = y * 4</code> (multiply)</td><td><code>x = y + y + y + y</code> or <code>x = y &lt;&lt; 2</code></td><td>Shift is faster</td></tr>
+          <tr><td><code>t4 = 4 * j</code> every iteration</td><td><code>t4 = t4 - 4</code> (subtract)</td><td>Multiply → Add</td></tr>
+          <tr><td><code>x / 2</code></td><td><code>x * 0.5</code> or <code>x &gt;&gt; 1</code></td><td>Shift/multiply</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q11 -->
+<div class="question-block">
+  <div class="q-header">📋 Q11 — 5 Marks · Data Flow</div>
+  <div class="q-body">
+    <p class="q-text">Explain the data flow equation <code>out[S] = gen[S] ∪ (in[S] − kill[S])</code> with an example.</p>
+    <div class="step"><span class="step-num">1</span><div><strong>Understanding the equation:</strong><br>
+      "The definitions that leave a statement S are: those generated BY S, PLUS those that enter S and are not killed by S."
+    </div></div>
+    <div class="step"><span class="step-num">2</span><div><strong>Concrete Example:</strong></div></div>
+    <div class="step"><span class="step-num"></span>
+      <div class="code-block" style="font-size:0.8rem">Program has 3 definitions:
+  d1: a = b + c    (in B1)
+  d2: a = x + y    (in B2)  ← another def of 'a'
+  d3: b = a - d    (in B1)
+
+For statement S = d1: a = b + c:
+  gen[S]  = {d1}        // S defines 'a' via d1
+  kill[S] = {d2}        // d1 kills other def of 'a' (d2)
+            Da - {d1} where Da = {d1, d2}
+
+Suppose in[S] = {d2, d3}   // d2 and d3 reach start of S
+
+out[S] = gen[S] ∪ (in[S] − kill[S])
+       = {d1}   ∪ ({d2,d3} − {d2})
+       = {d1}   ∪ {d3}
+       = {d1, d3}
+
+Meaning: After statement d1 executes:
+  - d1 itself is live (it just defined a)
+  - d3 (def of b) still flows through unchanged
+  - d2 (old def of a) is killed — a has been redefined!</div>
+    </div>
+    <div class="step"><span class="step-num">3</span><div><strong>Intuition summary:</strong> gen adds what S creates; kill removes what S overwrites; the rest of in[] passes through unchanged.</div></div>
+  </div>
+</div>
+
+<!-- Q12 -->
+<div class="question-block">
+  <div class="q-header">📋 Q12 — 2 Marks · Concept</div>
+  <div class="q-body">
+    <p class="q-text">What are dominators in a flow graph? Why are they important?</p>
+    <div class="step"><span class="step-num">A</span>
+      <div>
+        <p>Node <code>d</code> <strong>dominates</strong> node <code>n</code> if every possible path from the entry node of the flow graph to <code>n</code> must pass through <code>d</code>. Written as <code>d dom n</code>.</p>
+        <p><strong>Importance:</strong></p>
+        <ul>
+          <li>Used to <strong>identify natural loops</strong> (back edges: <code>n→d</code> where d dominates n)</li>
+          <li>The loop header dominates all nodes in the loop</li>
+          <li>Used in <strong>code motion</strong> to verify a computation dominates all loop exits (so moving it is safe)</li>
+          <li>Foundation for <strong>reducible flow graph</strong> analysis</li>
+        </ul>
+        <p><strong>Key fact:</strong> Every node dominates itself.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q13 -->
+<div class="question-block">
+  <div class="q-header">📋 Q13 — 5 Marks · Copy Propagation + Dead Code</div>
+  <div class="q-body">
+    <p class="q-text">Apply Copy Propagation and Dead Code Elimination to:<br>
+    x = a &nbsp;|&nbsp; y = x * b &nbsp;|&nbsp; z = x * c &nbsp;|&nbsp; w = y + z &nbsp;|&nbsp; x = b + c &nbsp;|&nbsp; return w</p>
+    <div class="step"><span class="step-num">1</span><div><strong>Original code:</strong></div></div>
+    <div class="step"><span class="step-num"></span>
+      <div class="code-block" style="font-size:0.8rem">1: x = a
+2: y = x * b      ← x is a, so y = a * b
+3: z = x * c      ← x is a, so z = a * c
+4: w = y + z
+5: x = b + c      ← x redefined (old x = a becomes dead here if not used after)
+6: return w       ← w uses y and z (which used old x = a)</div>
+    </div>
+    <div class="step"><span class="step-num">2</span><div><strong>Apply Copy Propagation:</strong> Statement 1 is a copy <code>x = a</code>. After this, <code>x</code> can be replaced by <code>a</code> at lines 2 and 3 (before <code>x</code> is redefined at line 5).</div></div>
+    <div class="step"><span class="step-num">3</span><div><strong>After Copy Propagation:</strong></div></div>
+    <div class="step"><span class="step-num"></span>
+      <div class="code-block" style="font-size:0.8rem">1: x = a
+2: y = a * b      ← x replaced by a
+3: z = a * c      ← x replaced by a
+4: w = y + z
+5: x = b + c      ← x computed but...
+6: return w       ← w only uses y, z — not x!</div>
+    </div>
+    <div class="step"><span class="step-num">4</span><div><strong>Apply Dead Code Elimination:</strong> After line 5, <code>x</code> is never used again (the function returns <code>w</code>). So <code>x = b + c</code> at line 5 is dead code. Also, the original <code>x = a</code> at line 1 may now also be dead if <code>x</code> is not used elsewhere.</div></div>
+    <div class="step"><span class="step-num">5</span><div><strong>Final optimized code:</strong></div></div>
+    <div class="step"><span class="step-num"></span>
+      <div class="ba-grid">
+        <div class="ba-box ba-before">x = a
+y = x * b
+z = x * c
+w = y + z
+x = b + c   ← dead!
+return w</div>
+        <div class="arrow">⇒</div>
+        <div class="ba-box ba-after">y = a * b   ← x replaced, x=a dead
+z = a * c   ← x replaced
+w = y + z
+            ← x=b+c deleted (dead)
+return w</div>
+      </div>
+      <p>Eliminated 2 statements, removed 1 temporary variable.</p>
+    </div>
+  </div>
+</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- QUICK REFERENCE SUMMARY -->
+<!-- ═══════════════════════════════════════════════ -->
+<section>
+<h2>📊 Quick Reference Summary</h2>
+
+<table>
+  <tr><th>Technique</th><th>Category</th><th>What it does</th><th>Key condition</th></tr>
+  <tr><td>Common Subexpression Elim.</td><td>Function Preserving</td><td>Reuse previously computed expressions</td><td>Operands unchanged since last computation</td></tr>
+  <tr><td>Copy Propagation</td><td>Function Preserving</td><td>Replace variable with its copy source</td><td>No redefinition of either var between copy and use</td></tr>
+  <tr><td>Dead Code Elimination</td><td>Function Preserving</td><td>Remove assignments whose values are never used</td><td>Variable is dead (never read again)</td></tr>
+  <tr><td>Constant Folding</td><td>Function Preserving</td><td>Evaluate constant expressions at compile time</td><td>All operands are compile-time constants</td></tr>
+  <tr><td>Code Motion</td><td>Loop Optimization</td><td>Move loop-invariant code to preheader</td><td>Expression is loop-invariant</td></tr>
+  <tr><td>Reduction in Strength</td><td>Loop Optimization</td><td>Replace expensive op with cheaper one (× → +)</td><td>Variable is an induction variable</td></tr>
+  <tr><td>Induction Variable Elim.</td><td>Loop Optimization</td><td>Remove redundant induction variables</td><td>Variable linearly related to another induction var</td></tr>
+  <tr><td>Peephole Optimization</td><td>Target Code</td><td>Improve small windows of machine code</td><td>Instruction pattern matches a known replaceable form</td></tr>
+</table>
+
+<div class="mnemonic" style="margin-top:1.5rem">
+  <div class="mnemonic-title">🔑 Master Mnemonic: "CC DC · CM RS IV · PO"</div>
+  <p><strong>Function Preserving:</strong> <em>Common</em> subexpr · <em>Copy</em> prop · <em>Dead</em> code · <em>Constant</em> fold</p>
+  <p><strong>Loop:</strong> <em>Code</em> Motion · <em>Reduction</em> in Strength · <em>Induction</em> Variable elim</p>
+  <p><strong>Machine:</strong> <em>Peephole</em> Optimization</p>
+</div>
+</section>
+
+</div><!-- /container -->
+
+<script>
+  // Smooth scroll for nav links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if(target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
+    });
+  });
+</script>
+</body>
+</html>
