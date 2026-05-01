@@ -52,12 +52,14 @@
     font-size: 16px;
   }
 
-  /* ── NAV ── */
+  /* NAV */
   nav {
-    position: sticky; top:0; z-index:100;
     background: var(--surface);
     border-bottom: 2px solid var(--border);
-    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 1rem;
     box-shadow: var(--shadow);
   }
   .nav-inner {
@@ -66,37 +68,30 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    overflow-x: auto;
-    padding: 0.5rem 0;
-    scrollbar-width: none;
-    flex-wrap: nowrap;
+    padding: 0.6rem 0;
   }
-  .nav-inner::-webkit-scrollbar { display: none; }
-  nav .brand {
+  .brand {
     font-family: 'Lora', serif;
-    font-weight: 700; font-size: 1rem;
+    font-weight: 700;
     color: var(--accent);
+    font-size: 1rem;
     white-space: nowrap;
-    margin-right: 0.5rem;
-    flex-shrink: 0;
+    flex: 1;
   }
-  nav a {
+  nav a.nav-link {
     color: var(--text-muted);
     text-decoration: none;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    padding: 0.3rem 0.6rem;
-    border-radius: 6px;
-    transition: all 0.2s;
     white-space: nowrap;
-    flex-shrink: 0;
+    padding: 0.35rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
   }
-  nav a:hover { background: var(--surface2); color: var(--accent); }
-  .nav-sep {
-    color: var(--border);
-    font-size: 1rem;
-    flex-shrink: 0;
-  }
+  nav a.nav-link:hover { background: var(--surface2); color: var(--text); }
+ 
+
 
   /* ── LAYOUT ── */
   .container {
@@ -583,6 +578,35 @@
   /* ── FOOTER ── */
   footer { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 3rem; }
 
+
+  .fab-pyq {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 999;
+    background: var(--accent);
+    color: white;
+    text-decoration: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 0.7rem 1.3rem;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(192,57,43,0.4);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .fab-pyq:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(192,57,43,0.5);
+  }
+  .fab-pyq:active { transform: translateY(0); }
+  .fab-pyq .fab-icon { font-size: 1rem; }
+
+
   /* ── ANIMATIONS ── */
   @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -600,13 +624,15 @@
     pre, .code-block { font-size: 0.75rem; padding: 0.9rem 1rem; }
     .module-header { margin: 3rem -1rem 2rem; padding: 1.5rem 1rem 1rem; }
   }
+
+
 </style>
 </head>
 <body>
 
 <!-- HERO -->
 <div class="hero">
-  <h1>📚 Compiler Design</h1>
+  <h1>Compiler Design</h1>
   <p>Modules 5, 6 & 7 — Code Optimization, Code Generation, and Parallelism</p>
   <!-- <div class="chips">
     <span class="chip">Code Optimization</span>
@@ -622,12 +648,22 @@
 </div>
 
 <!-- NAV -->
+
+<a href="/compiler_notes/pyq.html" class="fab-pyq">
+  <span class="fab-icon">📄</span> PYQ
+</a>
+ 
 <nav>
   <div class="nav-inner">
     <span class="brand">Compiler Design</span>
-    <a href="/compiler_notes/pyq.html">pyq</a>
+    <a href="#mod5" class="nav-link">Module 5</a>
+    <a href="#module6" class="nav-link">Module 6</a>
+    <a href="#module7" class="nav-link">Module 7</a>
   </div>
 </nav>
+ 
+
+
 
 <div class="container">
 
