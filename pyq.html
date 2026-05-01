@@ -2562,6 +2562,490 @@ unmatched_stmt → if expr then stmt
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════
+     Q24 — Parallelism in Sorting + Hard Cases
+══════════════════════════════════════════════ -->
+<div class="qcard">
+  <div class="qcard-header">
+    <div class="qcard-meta">
+      <span class="tag tag-mod">Module 5</span>
+      <span class="tag tag-marks">10 marks</span>
+      <span class="tag tag-type">Parallelism · Multi-core · Compiler</span>
+    </div>
+    <div class="qcard-q">
+      a) Consider a program for sorting numbers in C. Discuss and illustrate mechanisms by which we may achieve parallelism on modern multi-core processors. [5 marks]<br>
+      b) Provide an example of a program where parallelism is hard to achieve, with justification. [5 marks]
+    </div>
+  </div>
+  <div class="qcard-body">
+    <div class="ans-section">
+      <div class="ans-label">Part a — Parallelism in Sorting (Merge Sort Example)</div>
+      <p class="ans-text">Bubble sort is inherently sequential (each pass depends on the previous). <strong>Merge sort</strong> is naturally parallelizable because the two recursive halves are completely independent of each other.</p>
+      <pre>// Sequential merge sort
+void mergeSort(int arr[], int l, int r) {
+    if (l < r) {
+        int m = (l + r) / 2;
+        mergeSort(arr, l, m);      // left half
+        mergeSort(arr, m+1, r);    // right half — INDEPENDENT of above
+        merge(arr, l, m, r);
+    }
+}
+
+// Parallel version using OpenMP (compiler-directed parallelism)
+void mergeSortParallel(int arr[], int l, int r, int depth) {
+    if (l < r) {
+        int m = (l + r) / 2;
+        if (depth > 0) {
+            #pragma omp parallel sections   // compiler inserts thread fork
+            {
+                #pragma omp section
+                mergeSortParallel(arr, l, m, depth-1);    // Thread 1
+
+                #pragma omp section
+                mergeSortParallel(arr, m+1, r, depth-1);  // Thread 2
+            }
+        } else {
+            mergeSort(arr, l, m);
+            mergeSort(arr, m+1, r);
+        }
+        merge(arr, l, m, r);  // sequential merge (unavoidable dependency)
+    }
+}</pre>
+      <p class="ans-text"><strong>What the compiler does on a multi-core machine:</strong></p>
+      <p class="ans-text">1. <em>Parallelism detection:</em> The compiler's dependence analysis confirms that <code class="inline">mergeSort(l,m)</code> and <code class="inline">mergeSort(m+1,r)</code> write to disjoint memory regions (left half vs. right half of the array) — no data races, safe to parallelize.</p>
+      <p class="ans-text">2. <em>Thread creation:</em> The compiler (with OpenMP runtime) forks N threads at the <code class="inline">#pragma omp parallel</code> directive, distributing the two recursive calls across cores.</p>
+      <p class="ans-text">3. <em>Synchronization:</em> A barrier is inserted before <code class="inline">merge()</code> — all threads must finish sorting their subarray before merging can begin.</p>
+      <p class="ans-text">4. <em>Cache locality optimization:</em> The compiler can tile the merge step to keep data in L1/L2 cache, reducing memory traffic across cores.</p>
+      <div class="diagram">
+        <svg viewBox="0 0 560 230" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;font-size:11px">
+          <defs>
+            <marker id="pa" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#1c1a17"/>
+            </marker>
+          </defs>
+          <!-- Root -->
+          <rect x="180" y="8" width="200" height="30" rx="6" fill="#edf3fb" stroke="#1d4f8a" stroke-width="1.5"/>
+          <text x="280" y="27" text-anchor="middle" font-weight="bold">mergeSort(arr, 0, 7)</text>
+
+          <!-- fork -->
+          <line x1="240" y1="38" x2="120" y2="80" stroke="#1d4f8a" stroke-width="1.8" stroke-dasharray="5,3"/>
+          <line x1="320" y1="38" x2="440" y2="80" stroke="#1d4f8a" stroke-width="1.8" stroke-dasharray="5,3"/>
+          <text x="155" y="65" font-size="9" fill="#1d4f8a">Thread 1</text>
+          <text x="375" y="65" font-size="9" fill="#1d4f8a">Thread 2</text>
+
+          <rect x="30" y="80" width="180" height="30" rx="5" fill="#edf6f1" stroke="#1a6640" stroke-width="1.5"/>
+          <text x="120" y="99" text-anchor="middle">mergeSort(arr, 0, 3)</text>
+
+          <rect x="350" y="80" width="180" height="30" rx="5" fill="#edf6f1" stroke="#1a6640" stroke-width="1.5"/>
+          <text x="440" y="99" text-anchor="middle">mergeSort(arr, 4, 7)</text>
+
+          <!-- sub-splits -->
+          <line x1="80" y1="110" x2="55" y2="148" stroke="#888" stroke-width="1.2"/>
+          <line x1="155" y1="110" x2="175" y2="148" stroke="#888" stroke-width="1.2"/>
+          <rect x="10" y="148" width="90" height="28" rx="4" fill="#f8f6f1" stroke="#aaa"/>
+          <text x="55" y="165" text-anchor="middle">sort(0,1)</text>
+          <rect x="130" y="148" width="90" height="28" rx="4" fill="#f8f6f1" stroke="#aaa"/>
+          <text x="175" y="165" text-anchor="middle">sort(2,3)</text>
+
+          <line x1="400" y1="110" x2="375" y2="148" stroke="#888" stroke-width="1.2"/>
+          <line x1="475" y1="110" x2="495" y2="148" stroke="#888" stroke-width="1.2"/>
+          <rect x="330" y="148" width="90" height="28" rx="4" fill="#f8f6f1" stroke="#aaa"/>
+          <text x="375" y="165" text-anchor="middle">sort(4,5)</text>
+          <rect x="450" y="148" width="90" height="28" rx="4" fill="#f8f6f1" stroke="#aaa"/>
+          <text x="495" y="165" text-anchor="middle">sort(6,7)</text>
+
+          <!-- barrier + merge -->
+          <line x1="120" y1="110" x2="280" y2="195" stroke="#b53a1a" stroke-width="1" stroke-dasharray="3,3"/>
+          <line x1="440" y1="110" x2="280" y2="195" stroke="#b53a1a" stroke-width="1" stroke-dasharray="3,3"/>
+          <rect x="200" y="195" width="160" height="28" rx="5" fill="#fdf1ee" stroke="#b53a1a" stroke-width="1.5"/>
+          <text x="280" y="212" text-anchor="middle" fill="#b53a1a">barrier → merge()</text>
+        </svg>
+        <div class="diagram-caption">Parallel merge sort. Blue dashed = thread fork. Red dashed = barrier before sequential merge.</div>
+      </div>
+      <p class="ans-text"><strong>Other parallelizable sorting mechanisms:</strong></p>
+      <p class="ans-text">• <em>Parallel quicksort:</em> Once a pivot is placed, left and right partitions are independent — fork a thread for each.</p>
+      <p class="ans-text">• <em>Bitonic sort:</em> Designed specifically for parallel hardware; all compare-swap pairs in each stage are independent.</p>
+      <p class="ans-text">• <em>Radix sort:</em> The counting/histogram phase for each digit is parallelizable with reduction.</p>
+    </div>
+
+    <div class="ans-section">
+      <div class="ans-label">Part b — When Parallelism is Hard: Fibonacci Example</div>
+      <p class="ans-text">Programs with <strong>loop-carried dependencies</strong> or <strong>recursive dependencies on previous results</strong> are very hard to parallelize. Classic example:</p>
+      <pre>// Sequential Fibonacci — each value depends on the two before it
+int fib[N];
+fib[0] = 0;
+fib[1] = 1;
+for (int i = 2; i < N; i++) {
+    fib[i] = fib[i-1] + fib[i-2];  // DEPENDS on previous iterations
+}</pre>
+      <p class="ans-text"><strong>Why parallelism is hard here:</strong></p>
+      <p class="ans-text">1. <em>Loop-carried data dependence:</em> Iteration <em>i</em> reads <code class="inline">fib[i-1]</code> and <code class="inline">fib[i-2]</code>, which are written by iterations <em>i-1</em> and <em>i-2</em>. This is a true (RAW) dependence — you cannot compute <code class="inline">fib[i]</code> until <code class="inline">fib[i-1]</code> is done. The iterations cannot run simultaneously.</p>
+      <p class="ans-text">2. <em>Dependence distance = 1 and 2:</em> With distance 1, every iteration depends on the immediately preceding one. The compiler's dependence analysis detects this and correctly refuses to parallelize the loop.</p>
+      <p class="ans-text">3. <em>No loop-level parallelism exists</em> — any attempt to parallelize would produce incorrect results (race condition on reading partially-computed values).</p>
+      <pre>// A second hard case: pointer aliasing
+void addArrays(int *a, int *b, int *c, int n) {
+    for (int i = 0; i < n; i++) {
+        c[i] = a[i] + b[i];
+    }
+}
+// If a == c or b == c (aliasing), iteration i writes c[i]
+// which iteration i+1 reads as a[i+1] — dependence!
+// Compiler cannot parallelize unless it can prove no aliasing.</pre>
+      <div class="callout callout-warn">
+        <strong>Justification summary:</strong> Parallelism requires independence between operations. Loop-carried dependencies (where iteration N needs results from iteration N-1), pointer aliasing, shared mutable state, and recursive computations where each step builds on the last all fundamentally prevent automatic parallelization. The compiler must prove independence before it can safely parallelize — when it cannot prove this, it must conservatively treat the code as sequential.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     Q25 — Instruction Ordering & Runtime Organisation
+══════════════════════════════════════════════ -->
+<div class="qcard">
+  <div class="qcard-header">
+    <div class="qcard-meta">
+      <span class="tag tag-mod">Module 5</span>
+      <span class="tag tag-marks">10 marks</span>
+      <span class="tag tag-type">Instruction Ordering · Runtime Organisation</span>
+    </div>
+    <div class="qcard-q">
+      (i) When instructions are independent, is it possible to change the evaluation order during code generation? Justify your answer with an example. [5 marks]<br>
+      (ii) Specify two or more roles of runtime organisation in the code generation phase. [5 marks]
+    </div>
+  </div>
+  <div class="qcard-body">
+    <div class="ans-section">
+      <div class="ans-label">Part i — Reordering Independent Instructions</div>
+      <div class="callout callout-tip">
+        <strong>Yes</strong>, independent instructions can and should be reordered during code generation. The compiler is free to reorder any two instructions as long as there is no <em>data dependence</em>, <em>control dependence</em>, or <em>memory dependence</em> between them.
+      </div>
+      <p class="ans-text">Three types of dependences that <em>prevent</em> reordering:</p>
+      <p class="ans-text">• <strong>RAW (Read After Write / True dependence):</strong> Instruction B reads a value written by A. A must come first.</p>
+      <p class="ans-text">• <strong>WAR (Write After Read / Anti-dependence):</strong> B writes a register that A reads. A must read before B overwrites.</p>
+      <p class="ans-text">• <strong>WAW (Write After Write / Output dependence):</strong> Both A and B write to the same location. The second write must be last.</p>
+      <p class="ans-text"><strong>Example — reordering to hide memory latency:</strong></p>
+      <pre>// Three-address code:
+a = x + y       ; instruction 1
+b = m[addr]     ; instruction 2 — memory load (4-cycle latency)
+c = a * 2       ; instruction 3 — depends on (1): RAW on 'a'
+d = b + 1       ; instruction 4 — depends on (2): RAW on 'b'
+
+// Naive code generation (stall at instruction 4):
+ADD  R0, Rx, Ry     ; a = x+y        (1 cycle)
+LOAD R1, addr       ; b = m[addr]    (4 cycles latency)
+MUL  R2, R0, #2    ; c = a*2        (1 cycle — R0 ready)
+ADD  R3, R1, #1    ; d = b+1        STALL 3 cycles waiting for R1
+
+// Reordered (instructions 1 and 2 are independent — no dependence between them):
+LOAD R1, addr       ; start load FIRST (hides latency)
+ADD  R0, Rx, Ry     ; a = x+y — fills 1 cycle of load latency
+MUL  R2, R0, #2    ; c = a*2 — fills another cycle
+NOP                 ; 1 more cycle (or another independent inst.)
+ADD  R3, R1, #1    ; d = b+1 — R1 ready now, no stall!</pre>
+      <p class="ans-text">The dependence graph for this example:</p>
+      <div class="diagram">
+        <svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;font-size:11px">
+          <defs>
+            <marker id="dep" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#b53a1a"/>
+            </marker>
+            <marker id="dep2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#888"/>
+            </marker>
+          </defs>
+          <rect x="20" y="60" width="130" height="32" rx="5" fill="#edf3fb" stroke="#1d4f8a" stroke-width="1.5"/>
+          <text x="85" y="80" text-anchor="middle">(1) a = x + y</text>
+
+          <rect x="270" y="60" width="130" height="32" rx="5" fill="#edf3fb" stroke="#1d4f8a" stroke-width="1.5"/>
+          <text x="335" y="80" text-anchor="middle">(2) b = m[addr]</text>
+
+          <rect x="20" y="135" width="130" height="32" rx="5" fill="#f0ece6" stroke="#888" stroke-width="1.2"/>
+          <text x="85" y="155" text-anchor="middle">(3) c = a * 2</text>
+
+          <rect x="270" y="135" width="130" height="32" rx="5" fill="#f0ece6" stroke="#888" stroke-width="1.2"/>
+          <text x="335" y="155" text-anchor="middle">(4) d = b + 1</text>
+
+          <!-- RAW edges -->
+          <line x1="85" y1="92" x2="85" y2="135" stroke="#b53a1a" stroke-width="2" marker-end="url(#dep)"/>
+          <text x="50" y="118" font-size="9" fill="#b53a1a">RAW: a</text>
+          <line x1="335" y1="92" x2="335" y2="135" stroke="#b53a1a" stroke-width="2" marker-end="url(#dep)"/>
+          <text x="360" y="118" font-size="9" fill="#b53a1a">RAW: b</text>
+
+          <!-- No edge between (1) and (2) — independent -->
+          <text x="170" y="50" text-anchor="middle" font-size="10" fill="#1a6640">✓ INDEPENDENT</text>
+          <line x1="150" y1="75" x2="270" y2="75" stroke="#1a6640" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="210" y="70" font-size="9" fill="#1a6640">no edge</text>
+        </svg>
+        <div class="diagram-caption">Dependence graph. Red arrows = RAW dependencies (ordering required). No edge between (1) and (2) means they can be swapped freely.</div>
+      </div>
+      <p class="ans-text"><strong>Justification:</strong> The semantics of a program are defined by the <em>values produced</em>, not the physical order of independent instructions. As long as all dependency chains are respected, any topological ordering of the dependence DAG produces the same correct result. The compiler exploits this freedom via <em>instruction scheduling</em> to minimise pipeline stalls, hide memory latency, and maximise functional unit utilisation.</p>
+    </div>
+
+    <div class="ans-section">
+      <div class="ans-label">Part ii — Roles of Runtime Organisation in Code Generation</div>
+      <p class="ans-text">Runtime organisation refers to how a compiler structures the execution environment — memory layout, stack management, calling conventions — so that the generated code works correctly at runtime. It directly shapes what code the code generator emits.</p>
+
+      <p class="ans-text"><strong>Role 1: Storage Allocation &amp; Activation Records</strong></p>
+      <p class="ans-text">The code generator must emit code to <em>allocate and deallocate activation records</em> (stack frames) on every function call/return. An activation record holds: local variables, parameters, return address, saved registers, and the dynamic link (pointer to caller's frame). The runtime layout dictates the exact offsets the code generator uses to access each variable.</p>
+      <pre>; Code generated for function call f(a, b):
+PUSH  R3           ; save caller-saved register
+PUSH  b            ; push arg2
+PUSH  a            ; push arg1
+CALL  f            ; push return address, jump
+ADD   SP, SP, 8   ; callee removes args (cdecl: caller cleans)
+POP   R3           ; restore</pre>
+
+      <p class="ans-text"><strong>Role 2: Register vs. Memory Allocation Strategy</strong></p>
+      <p class="ans-text">The runtime organisation defines which registers are caller-saved vs. callee-saved (the ABI). The code generator uses this to decide which variables can stay in registers across function calls and which must be spilled to memory. Without this, generated code might corrupt a caller's register.</p>
+
+      <p class="ans-text"><strong>Role 3: Heap Management Interface</strong></p>
+      <p class="ans-text">For languages with dynamic allocation (malloc, new), the code generator emits calls to the runtime heap manager. The runtime organisation defines the interface to the allocator, garbage collector hooks, and memory safety checks. The code generator inserts these calls at the right points.</p>
+
+      <p class="ans-text"><strong>Role 4: Parameter Passing Convention</strong></p>
+      <p class="ans-text">The runtime organisation specifies <em>how</em> arguments are passed — in registers (e.g., x86-64: first 6 args in RDI, RSI, RDX, RCX, R8, R9) or on the stack, and in what order. The code generator must produce code that matches this convention exactly, especially for inter-procedural calls and library calls.</p>
+
+      <div class="callout callout-info">
+        <strong>Summary:</strong> Runtime organisation is the contract between the compiler's code generator and the execution environment. Without it, the code generator cannot correctly emit call sequences, access local variables at the right stack offset, manage registers across calls, or interface with system libraries.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     Q26 — Next-Use/Liveness + Machine Code + Activation Tree
+══════════════════════════════════════════════ -->
+<div class="qcard">
+  <div class="qcard-header">
+    <div class="qcard-meta">
+      <span class="tag tag-mod">Module 5</span>
+      <span class="tag tag-marks">15 marks</span>
+      <span class="tag tag-type">Next-Use · Liveness · Machine Code · Activation Tree</span>
+    </div>
+    <div class="qcard-q">
+      i) Compute next-use and liveness for: <code>k=a+b, m=k-c, n=k*b, p=m+n, q=a/k</code> [4 marks]<br>
+      ii) Generate machine code using R0, R1, R2 based on next-use/live info. Show address &amp; register descriptors. [6 marks]<br>
+      iii) Construct activation tree and control stack for BinarySearch(arr, 5, 0, 9) where arr={12,23,34,45,56,67,78,89,91,95}. [5 marks]
+    </div>
+  </div>
+  <div class="qcard-body">
+    <div class="ans-section">
+      <div class="ans-label">Part i — Next-Use &amp; Liveness (scan bottom-up)</div>
+      <p class="ans-text">Rules: when we see <code class="inline">x = y op z</code>, (a) x gets defined here — any prior next-use of x is removed; (b) y and z get a next-use at this statement and become live.</p>
+      <p class="ans-text">Assume all of k, m, n, p, q are <strong>live on exit</strong> (used after the block). Variables a, b, c are live on entry (inputs).</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Stmt</th><th>Code</th>
+              <th>k (live/next)</th><th>m (live/next)</th><th>n (live/next)</th>
+              <th>p (live/next)</th><th>q (live/next)</th>
+              <th>a (live/next)</th><th>b (live/next)</th><th>c (live/next)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="10" style="background:#f8f6f1;font-size:0.78rem;font-style:italic;padding:0.4rem 0.9rem">
+                ← Start from bottom. At end of block: k,m,n,p,q live-out; a,b,c considered dead after last use.
+              </td>
+            </tr>
+            <tr>
+              <td>5</td><td>q = a/k</td>
+              <td>use,dead after</td><td>—</td><td>—</td><td>—</td><td>def,live-out</td>
+              <td>use,dead</td><td>—</td><td>—</td>
+            </tr>
+            <tr>
+              <td>4</td><td>p = m+n</td>
+              <td>next=5</td><td>use,dead</td><td>use,dead</td><td>def,live-out</td><td>—</td>
+              <td>next=5</td><td>—</td><td>—</td>
+            </tr>
+            <tr>
+              <td>3</td><td>n = k*b</td>
+              <td>next=5</td><td>—</td><td>def,next=4</td><td>—</td><td>—</td>
+              <td>next=5</td><td>use,dead</td><td>—</td>
+            </tr>
+            <tr>
+              <td>2</td><td>m = k-c</td>
+              <td>next=3,5</td><td>def,next=4</td><td>—</td><td>—</td><td>—</td>
+              <td>next=5</td><td>—</td><td>use,dead</td>
+            </tr>
+            <tr>
+              <td>1</td><td>k = a+b</td>
+              <td>def,next=2</td><td>—</td><td>—</td><td>—</td><td>—</td>
+              <td>use,next=5</td><td>use,next=3</td><td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="ans-text" style="margin-top:0.5rem"><strong>Summary of next-use at each statement:</strong></p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>At start of stmt</th><th>Variable</th><th>Next-use</th><th>Live?</th></tr></thead>
+          <tbody>
+            <tr><td>Stmt 1 (k=a+b)</td><td>a</td><td>stmt 5</td><td>Yes</td></tr>
+            <tr><td></td><td>b</td><td>stmt 3</td><td>Yes</td></tr>
+            <tr><td>Stmt 2 (m=k-c)</td><td>k</td><td>stmts 3,5</td><td>Yes</td></tr>
+            <tr><td></td><td>c</td><td>stmt 2 (last)</td><td>No after</td></tr>
+            <tr><td>Stmt 3 (n=k*b)</td><td>k</td><td>stmt 5</td><td>Yes</td></tr>
+            <tr><td></td><td>b</td><td>stmt 3 (last)</td><td>No after</td></tr>
+            <tr><td>Stmt 4 (p=m+n)</td><td>m</td><td>stmt 4 (last)</td><td>No after</td></tr>
+            <tr><td></td><td>n</td><td>stmt 4 (last)</td><td>No after</td></tr>
+            <tr><td>Stmt 5 (q=a/k)</td><td>a</td><td>stmt 5 (last)</td><td>No after</td></tr>
+            <tr><td></td><td>k</td><td>stmt 5 (last)</td><td>No after</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="ans-section">
+      <div class="ans-label">Part ii — Machine Code with Register &amp; Address Descriptors</div>
+      <p class="ans-text">We have R0, R1, R2. Strategy: load operands into registers, reuse registers when a variable's next-use is dead (register can be reused). Spill to memory only when all 3 registers are occupied and all are still live.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Stmt</th><th>Generated Machine Code</th>
+              <th>Register Descriptor<br>(Reg → var)</th>
+              <th>Address Descriptor<br>(var → location)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>k = a+b</td>
+              <td>LD R0, a<br>ADD R0, R0, b</td>
+              <td>R0→k<br>R1→free, R2→free</td>
+              <td>k: R0<br>a: memory, b: memory</td>
+            </tr>
+            <tr>
+              <td>m = k-c</td>
+              <td>LD R1, c<br>SUB R1, R0, R1</td>
+              <td>R0→k (still live: next-use=3,5)<br>R1→m</td>
+              <td>k: R0, m: R1<br>c: memory (dead after)</td>
+            </tr>
+            <tr>
+              <td>n = k*b</td>
+              <td>LD R2, b<br>MUL R2, R0, R2</td>
+              <td>R0→k (next-use=5)<br>R1→m (next-use=4)<br>R2→n</td>
+              <td>k:R0, m:R1, n:R2<br>b: memory (dead after)</td>
+            </tr>
+            <tr>
+              <td>p = m+n</td>
+              <td>ADD R1, R1, R2<br><em>(m dead after → reuse R1 for p;<br>n dead after → R2 free)</em></td>
+              <td>R0→k, R1→p, R2→free</td>
+              <td>p: R1; k: R0<br>m, n: dead</td>
+            </tr>
+            <tr>
+              <td>q = a/k</td>
+              <td>LD R2, a<br>DIV R2, R2, R0<br><em>(k dead after, p live-out → ST R1,p;<br>q live-out → ST R2,q; k live-out → ST R0,k)</em><br>ST p, R1<br>ST k, R0<br>ST q, R2</td>
+              <td>R0→k, R1→p, R2→q<br><em>(then store live-outs)</em></td>
+              <td>k: memory, p: memory<br>q: memory<br>m,n: gone; a,b,c: dead</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="ans-text"><strong>Complete generated machine code:</strong></p>
+      <pre>LD  R0, a        ; load a
+ADD R0, R0, b    ; k = a + b  → k in R0
+LD  R1, c        ; load c
+SUB R1, R0, R1   ; m = k - c  → m in R1
+LD  R2, b        ; load b
+MUL R2, R0, R2   ; n = k * b  → n in R2
+ADD R1, R1, R2   ; p = m + n  → p in R1 (m,n now dead; R2 free)
+LD  R2, a        ; load a for q
+DIV R2, R2, R0   ; q = a / k  → q in R2
+ST  k, R0        ; store k (live-out)
+ST  p, R1        ; store p (live-out)
+ST  q, R2        ; store q (live-out)</pre>
+    </div>
+
+    <div class="ans-section">
+      <div class="ans-label">Part iii — Activation Tree &amp; Control Stack for BinarySearch</div>
+      <p class="ans-text">Array = {12, 23, 34, 45, 56, 67, 78, 89, 91, 95} (indices 0–9). Searching for <strong>num = 5</strong>. Since 5 is less than every element, the search will keep going left until first &gt; last.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Call</th><th>first</th><th>last</th><th>mid</th><th>arr[mid]</th><th>Comparison</th><th>Next action</th></tr></thead>
+          <tbody>
+            <tr><td>BS(arr,5,0,9)</td><td>0</td><td>9</td><td>4</td><td>56</td><td>5 &lt; 56</td><td>BS(arr,5,0,3)</td></tr>
+            <tr><td>BS(arr,5,0,3)</td><td>0</td><td>3</td><td>1</td><td>23</td><td>5 &lt; 23</td><td>BS(arr,5,0,0)</td></tr>
+            <tr><td>BS(arr,5,0,0)</td><td>0</td><td>0</td><td>0</td><td>12</td><td>5 &lt; 12</td><td>BS(arr,5,0,-1)</td></tr>
+            <tr><td>BS(arr,5,0,-1)</td><td>0</td><td>-1</td><td>—</td><td>—</td><td>first&gt;last</td><td>return -1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;font-size:11px">
+          <defs>
+            <marker id="acta" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#888"/>
+            </marker>
+          </defs>
+          <!-- Activation Tree -->
+          <text x="140" y="14" text-anchor="middle" font-weight="bold" font-size="12">Activation Tree</text>
+
+          <rect x="30" y="22" width="220" height="28" rx="5" fill="#f0ece6" stroke="#888" stroke-width="1.2"/>
+          <text x="140" y="40" text-anchor="middle">main()</text>
+
+          <line x1="140" y1="50" x2="140" y2="72" stroke="#888" stroke-width="1.2" marker-end="url(#acta)"/>
+          <rect x="20" y="72" width="240" height="28" rx="5" fill="#edf3fb" stroke="#1d4f8a" stroke-width="1.5"/>
+          <text x="140" y="90" text-anchor="middle">BS(arr, 5, 0, 9)  mid=4</text>
+
+          <line x1="100" y1="100" x2="90" y2="122" stroke="#888" stroke-width="1.2" marker-end="url(#acta)"/>
+          <rect x="10" y="122" width="220" height="28" rx="5" fill="#edf3fb" stroke="#1d4f8a" stroke-width="1.3"/>
+          <text x="120" y="140" text-anchor="middle">BS(arr, 5, 0, 3)  mid=1</text>
+
+          <line x1="75" y1="150" x2="65" y2="172" stroke="#888" stroke-width="1.2" marker-end="url(#acta)"/>
+          <rect x="5" y="172" width="210" height="28" rx="5" fill="#edf3fb" stroke="#1d4f8a" stroke-width="1.2"/>
+          <text x="110" y="190" text-anchor="middle">BS(arr, 5, 0, 0)  mid=0</text>
+
+          <line x1="60" y1="200" x2="50" y2="222" stroke="#888" stroke-width="1.2" marker-end="url(#acta)"/>
+          <rect x="5" y="222" width="200" height="28" rx="5" fill="#fdf1ee" stroke="#b53a1a" stroke-width="1.5"/>
+          <text x="105" y="240" text-anchor="middle" fill="#b53a1a">BS(arr,5,0,-1) → -1</text>
+
+          <!-- Control Stack (right side) -->
+          <text x="420" y="14" text-anchor="middle" font-weight="bold" font-size="12">Control Stack (at deepest point)</text>
+
+          <rect x="330" y="22" width="200" height="28" rx="4" fill="#f8f6f1" stroke="#aaa"/>
+          <text x="430" y="40" text-anchor="middle">main()  ← bottom</text>
+
+          <rect x="330" y="58" width="200" height="28" rx="4" fill="#edf3fb" stroke="#1d4f8a"/>
+          <text x="430" y="76" text-anchor="middle">AR: BS(0,9)</text>
+
+          <rect x="330" y="94" width="200" height="28" rx="4" fill="#edf3fb" stroke="#1d4f8a"/>
+          <text x="430" y="112" text-anchor="middle">AR: BS(0,3)</text>
+
+          <rect x="330" y="130" width="200" height="28" rx="4" fill="#edf3fb" stroke="#1d4f8a"/>
+          <text x="430" y="148" text-anchor="middle">AR: BS(0,0)</text>
+
+          <rect x="330" y="166" width="200" height="28" rx="4" fill="#fdf1ee" stroke="#b53a1a" stroke-width="1.5"/>
+          <text x="430" y="184" text-anchor="middle" fill="#b53a1a">AR: BS(0,-1) ← top</text>
+
+          <text x="430" y="215" text-anchor="middle" font-size="9" fill="#b53a1a">first &gt; last → return -1</text>
+          <text x="430" y="228" text-anchor="middle" font-size="9" fill="#888">Unwind: -1 propagates up</text>
+          <text x="430" y="241" text-anchor="middle" font-size="9" fill="#888">through all frames → main</text>
+        </svg>
+        <div class="diagram-caption">Left: activation tree showing recursive call structure. Right: runtime control stack at maximum depth. Each AR (Activation Record) holds: arr pointer, num, first, last, mid, return address.</div>
+      </div>
+      <p class="ans-text"><strong>Activation Record contents for each BS call:</strong></p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Field</th><th>Description</th><th>Example (BS(0,9))</th></tr></thead>
+          <tbody>
+            <tr><td>Return address</td><td>Where to return after this call</td><td>address in main / caller</td></tr>
+            <tr><td>Dynamic link</td><td>Pointer to caller's AR</td><td>→ main's AR</td></tr>
+            <tr><td>arr</td><td>Parameter: array pointer</td><td>base addr of {12,23,...}</td></tr>
+            <tr><td>num</td><td>Parameter: search key</td><td>5</td></tr>
+            <tr><td>first</td><td>Parameter</td><td>0</td></tr>
+            <tr><td>last</td><td>Parameter</td><td>9</td></tr>
+            <tr><td>mid</td><td>Local variable</td><td>4 (computed at runtime)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-info">
+        <strong>Final result:</strong> index = BinarySearch(arr, 5, 0, 9) = <strong>-1</strong> (5 not found in the array). The printf outputs "-1".
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- end .page -->
 </body>
 </html>
