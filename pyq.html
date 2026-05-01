@@ -1,0 +1,2598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compiler Design — Complete Question Bank & Answers</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f6f1;
+    --surface: #ffffff;
+    --surface2: #f2efe8;
+    --border: #e0d9cc;
+    --accent: #2d5a8e;
+    --accent2: #c0392b;
+    --accent3: #27ae60;
+    --text: #1a1a1a;
+    --text2: #4a4a4a;
+    --text3: #7a7a7a;
+    --tag-bg: #e8f0fb;
+    --tag-text: #2d5a8e;
+    --code-bg: #f0ede6;
+    --highlight: #fff3cd;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--accent);
+    color: white;
+    padding: 2.5rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -30px;
+    width: 250px; height: 250px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  header h1 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 2.6rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    position: relative;
+    z-index: 1;
+  }
+  header p {
+    margin-top: 0.5rem;
+    opacity: 0.85;
+    font-size: 0.95rem;
+    position: relative;
+    z-index: 1;
+  }
+  .header-meta {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.25rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 0;
+    min-width: max-content;
+    padding: 0 1rem;
+  }
+  nav a {
+    display: block;
+    padding: 0.9rem 1.1rem;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* LAYOUT */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* SECTIONS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-num {
+    background: var(--accent);
+    color: white;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* QUESTION CARD */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .q-header {
+    background: linear-gradient(to right, var(--surface2), var(--surface));
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .q-num {
+    background: var(--accent);
+    color: white;
+    min-width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .q-title {
+    flex: 1;
+  }
+  .q-title h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .q-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .tag.marks { background: #fef3e2; color: #c0392b; }
+  .tag.module { background: #e8f5e9; color: #27ae60; }
+  .q-toggle {
+    color: var(--text3);
+    font-size: 1.2rem;
+    transition: transform 0.3s;
+    margin-top: 2px;
+  }
+  .q-card.open .q-toggle { transform: rotate(180deg); }
+
+  .q-body {
+    display: none;
+    padding: 1.5rem;
+  }
+  .q-card.open .q-body { display: block; }
+
+  /* ANSWER CONTENT */
+  .answer-block {
+    background: var(--surface);
+    border-left: 4px solid var(--accent);
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0 8px 8px 0;
+  }
+  .answer-block h4 {
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+  .answer-block p { margin-bottom: 0.8rem; color: var(--text2); }
+  .answer-block ul, .answer-block ol {
+    padding-left: 1.5rem;
+    color: var(--text2);
+    margin-bottom: 0.8rem;
+  }
+  .answer-block li { margin-bottom: 0.4rem; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: var(--accent2);
+  }
+  pre {
+    background: #1e2030;
+    color: #cdd6f4;
+    padding: 1.2rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin: 1rem 0;
+  }
+  pre .kw { color: #cba6f7; }
+  pre .str { color: #a6e3a1; }
+  pre .num { color: #fab387; }
+  pre .cmt { color: #6c7086; font-style: italic; }
+  pre .op { color: #89dceb; }
+  pre .lbl { color: #f38ba8; }
+
+  /* TABLES */
+  .tbl-wrap { overflow-x: auto; margin: 1rem 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th {
+    background: var(--accent);
+    color: white;
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.3px;
+  }
+  td {
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+  }
+  tr:nth-child(even) td { background: var(--surface2); }
+  tr:hover td { background: var(--tag-bg); }
+
+  /* SVG DIAGRAMS */
+  .diagram-wrap {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+  .diagram-wrap figcaption {
+    font-size: 0.8rem;
+    color: var(--text3);
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+  svg text { font-family: 'JetBrains Mono', monospace; }
+
+  /* CALLOUTS */
+  .callout {
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-size: 0.88rem;
+  }
+  .callout.tip { background: #e8f5e9; border-left: 4px solid #27ae60; color: #1b5e20; }
+  .callout.warn { background: #fff3e0; border-left: 4px solid #ff9800; color: #e65100; }
+  .callout.info { background: #e3f2fd; border-left: 4px solid #2196f3; color: #0d47a1; }
+  .callout.key { background: #fce4ec; border-left: 4px solid #e91e63; color: #880e4f; }
+  .callout strong { font-weight: 700; }
+
+  /* PAPER ANALYSIS */
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+  }
+  .module-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    box-shadow: var(--shadow);
+  }
+  .module-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.3rem;
+  }
+  .module-card .freq {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .module-card .freq span { font-size: 0.9rem; color: var(--text3); font-weight: 400; }
+  .module-card p { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .bar-wrap { background: var(--border); height: 6px; border-radius: 3px; margin: 0.5rem 0; }
+  .bar { height: 6px; border-radius: 3px; background: var(--accent); }
+
+  /* STEP LIST */
+  .steps { counter-reset: step; padding: 0; list-style: none; }
+  .steps li {
+    display: flex; gap: 1rem;
+    margin-bottom: 1rem;
+    counter-increment: step;
+  }
+  .steps li::before {
+    content: counter(step);
+    background: var(--accent);
+    color: white;
+    min-width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* FOLLOW TABLE */
+  .followpos-table td { text-align: center; }
+
+  h5 { color: var(--accent); font-size: 0.9rem; margin: 1rem 0 0.4rem; font-weight: 700; }
+
+  .math {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    margin: 0.5rem 0;
+    display: block;
+  }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.8rem; }
+    .container { padding: 1rem; }
+    nav a { padding: 0.75rem 0.7rem; font-size: 0.75rem; }
+  }
+
+  .section-divider {
+    height: 2px;
+    background: linear-gradient(to right, var(--accent), transparent);
+    margin: 3rem 0 2rem;
+    border-radius: 2px;
+  }
+
+  .paper-tag {
+    display: inline-block;
+    background: #f3e5f5;
+    color: #6a1b9a;
+    border-radius: 4px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-right: 0.3rem;
+  }
+
+  .formula-box {
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    margin: 1rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    background: #f0f4ff;
+  }
+
+  details > summary {
+    cursor: pointer;
+    padding: 0.5rem;
+    font-weight: 600;
+    color: var(--accent);
+    list-style: none;
+  }
+  details[open] > summary::after { content: ' ▲'; }
+  details > summary::after { content: ' ▼'; font-size: 0.8em; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Compiler Design — Complete Q&A Guide</h1>
+  <p>BCSE307L · VIT University · Based on FAT Question Papers</p>
+  <div class="header-meta">
+    <span class="badge">📄 3 Question Papers Analysed</span>
+    <span class="badge">📚 8 Modules Covered</span>
+    <span class="badge">✅ Full Detailed Answers</span>
+    <span class="badge">📊 Paper Analysis Included</span>
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#analysis">📊 Paper Analysis</a></li>
+    <li><a href="#mod1">Module 1: Lexical</a></li>
+    <li><a href="#mod2">Module 2: Syntax</a></li>
+    <li><a href="#mod3">Module 3: Semantics</a></li>
+    <li><a href="#mod4">Module 4: Intermediate Code</a></li>
+    <li><a href="#mod5">Module 5: Optimization</a></li>
+    <li><a href="#mod6">Module 6: Code Gen</a></li>
+    <li><a href="#mod7">Module 7: Parallelism</a></li>
+    <li><a href="#long">Long Questions (15M)</a></li>
+  </ul>
+</nav>
+
+<!-- ===================== PAPER ANALYSIS ===================== -->
+<div class="container" id="analysis">
+  <div class="section-header">
+    <div class="section-num">📊</div>
+    <h2>Paper Analysis — Module-wise Frequency</h2>
+  </div>
+  <p style="color:var(--text2); margin-bottom:1.5rem;">Based on analysis of 3 FAT papers (Nov/Dec 2024 ×2, July/Aug 2023, May 2024). Each paper has 7×10M + 2×15M = 100 marks.</p>
+
+  <div class="analysis-grid">
+    <div class="module-card">
+      <h4>Module 1 — Intro & Lexical Analysis</h4>
+      <div class="freq">~1.5 <span>Qs / paper</span></div>
+      <div class="bar-wrap"><div class="bar" style="width:90%"></div></div>
+      <p><strong>Always appears.</strong> DFA construction using direct method (RE→syntax tree→DFA) is the most guaranteed question. Also: phases of compiler, NFA construction.</p>
+    </div>
+    <div class="module-card">
+      <h4>Module 2 — Syntax Analysis</h4>
+      <div class="freq">~2 <span>Qs / paper</span></div>
+      <div class="bar-wrap"><div class="bar" style="width:100%"></div></div>
+      <p><strong>Highest frequency.</strong> LL(1) predictive parsing tables, SLR(1), CLR(1), LALR parser construction. One Q from each parsing method typically. Long 15M question often from here.</p>
+    </div>
+    <div class="module-card">
+      <h4>Module 3 — Semantics & SDT</h4>
+      <div class="freq">~1.5 <span>Qs / paper</span></div>
+      <div class="bar-wrap"><div class="bar" style="width:85%"></div></div>
+      <p><strong>Reliable.</strong> Syntax Directed Translation schemes, annotated parse trees, hex/decimal conversion, semantic rules for grammars. Dependency graphs appear occasionally.</p>
+    </div>
+    <div class="module-card">
+      <h4>Module 4 — Intermediate Code</h4>
+      <div class="freq">~2 <span>Qs / paper</span></div>
+      <div class="bar-wrap"><div class="bar" style="width:100%"></div></div>
+      <p><strong>Highest frequency (tie with Mod 2).</strong> Three-address code generation, short-circuit evaluation, back-patching, quadruples/triples/indirect triples. Almost always 2 questions.</p>
+    </div>
+    <div class="module-card">
+      <h4>Module 5 — Code Optimization</h4>
+      <div class="freq">~1.5 <span>Qs / paper</span></div>
+      <div class="bar-wrap"><div class="bar" style="width:85%"></div></div>
+      <p><strong>Common in long Qs.</strong> Basic blocks, control flow graphs, DAG representation, optimization techniques (constant folding, CSE, etc.), dominator trees. Usually one 15M question.</p>
+    </div>
+    <div class="module-card">
+      <h4>Module 6 — Code Generation</h4>
+      <div class="freq">~1 <span>Q / paper</span></div>
+      <div class="bar-wrap"><div class="bar" style="width:70%"></div></div>
+      <p><strong>Moderate.</strong> Next-use & liveness info, register allocation, machine code generation with address/register descriptors, activation records.</p>
+    </div>
+    <div class="module-card">
+      <h4>Module 7 — Parallelism</h4>
+      <div class="freq">~0.8 <span>Q / paper</span></div>
+      <div class="bar-wrap"><div class="bar" style="width:55%"></div></div>
+      <p><strong>Theory based.</strong> Instruction scheduling, software pipelining, automatic parallelization, SIMD vs MIMD, cache locality. Usually a theory/discuss type question.</p>
+    </div>
+    <div class="module-card">
+      <h4>Key Exam Patterns</h4>
+      <div class="freq" style="font-size:1.1rem;">Tips</div>
+      <div class="bar-wrap"><div class="bar" style="width:100%; background:var(--accent2)"></div></div>
+      <p>• DFA direct method — <strong>appears in every paper</strong><br>• Parsing table construction — <strong>every paper</strong><br>• Three-address + quadruples — <strong>every paper</strong><br>• Basic blocks + CFG — <strong>every paper (15M)</strong></p>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <strong>Strategy:</strong> Master these 4 topics and you secure ~50+ marks every paper: (1) RE→DFA via direct method, (2) LL(1)/SLR parsing table, (3) Three-address code + quadruple/triple forms, (4) Basic blocks + CFG + optimizations.
+  </div>
+</div>
+
+<!-- ===================== MODULE 1 ===================== -->
+<div class="container" id="mod1">
+  <div class="section-divider"></div>
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>Module 1 — Introduction & Lexical Analysis</h2>
+  </div>
+
+  <!-- Q1.1 -->
+  <div class="q-card" id="q1_1">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q1</div>
+      <div class="q-title">
+        <h3>Explain the phases of a compiler with example input: <code>while(i&lt;=num){ sum=sum+i*20; i++; }</code></h3>
+        <div class="q-meta">
+          <span class="tag module">Module 1</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024</span><span class="paper-tag">May 2024</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Overview — The Six Phases</h4>
+        <p>A compiler translates source code into target code through six sequential phases. Each phase transforms the program into a progressively lower-level representation. The phases communicate through intermediate data structures and share a <strong>symbol table</strong> and <strong>error handler</strong>.</p>
+      </div>
+
+      <h5>Phase 1 — Lexical Analysis (Scanner)</h5>
+      <div class="answer-block">
+        <p>Reads character stream, groups into <strong>tokens</strong> (meaningful units). Removes whitespace and comments.</p>
+        <p>For <code>sum = sum + i * 20</code>:</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Lexeme</th><th>Token Type</th><th>Attribute</th></tr>
+            <tr><td>sum</td><td>id</td><td>pointer to symtab entry</td></tr>
+            <tr><td>=</td><td>assign_op</td><td>—</td></tr>
+            <tr><td>sum</td><td>id</td><td>pointer to symtab entry</td></tr>
+            <tr><td>+</td><td>add_op</td><td>—</td></tr>
+            <tr><td>i</td><td>id</td><td>pointer to symtab entry</td></tr>
+            <tr><td>*</td><td>mul_op</td><td>—</td></tr>
+            <tr><td>20</td><td>num</td><td>20</td></tr>
+          </table>
+        </div>
+        <p>Output: token stream → <code>&lt;id,1&gt; &lt;assign&gt; &lt;id,1&gt; &lt;+&gt; &lt;id,2&gt; &lt;*&gt; &lt;num,20&gt;</code></p>
+      </div>
+
+      <h5>Phase 2 — Syntax Analysis (Parser)</h5>
+      <div class="answer-block">
+        <p>Arranges tokens into a <strong>parse tree / syntax tree</strong> according to the grammar rules. Checks grammatical structure.</p>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 500 240" width="500" height="240">
+            <!-- Syntax tree for sum = sum + i * 20 -->
+            <text x="250" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#2d5a8e">assign</text>
+            <line x1="250" y1="30" x2="140" y2="70" stroke="#666" stroke-width="1.5"/>
+            <line x1="250" y1="30" x2="360" y2="70" stroke="#666" stroke-width="1.5"/>
+            <text x="140" y="85" text-anchor="middle" font-size="12" fill="#c0392b">sum (id)</text>
+            <text x="360" y="85" text-anchor="middle" font-size="13" font-weight="bold" fill="#2d5a8e">+</text>
+            <line x1="360" y1="90" x2="270" y2="130" stroke="#666" stroke-width="1.5"/>
+            <line x1="360" y1="90" x2="450" y2="130" stroke="#666" stroke-width="1.5"/>
+            <text x="270" y="145" text-anchor="middle" font-size="12" fill="#c0392b">sum (id)</text>
+            <text x="450" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#2d5a8e">*</text>
+            <line x1="450" y1="150" x2="410" y2="190" stroke="#666" stroke-width="1.5"/>
+            <line x1="450" y1="150" x2="490" y2="190" stroke="#666" stroke-width="1.5"/>
+            <text x="410" y="205" text-anchor="middle" font-size="12" fill="#c0392b">i (id)</text>
+            <text x="490" y="205" text-anchor="middle" font-size="12" fill="#27ae60">20 (num)</text>
+          </svg>
+          <figcaption>Syntax tree for: sum = sum + i * 20</figcaption>
+        </div>
+      </div>
+
+      <h5>Phase 3 — Semantic Analysis</h5>
+      <div class="answer-block">
+        <p>Performs <strong>type checking</strong> and ensures semantic correctness. Adds type info to syntax tree.</p>
+        <ul>
+          <li>Checks that <code>i</code> and <code>num</code> in <code>i &lt;= num</code> are compatible types.</li>
+          <li>Detects implicit type conversions: <code>20</code> (integer) → implicit cast if <code>sum</code> is float.</li>
+          <li>Checks that variables are declared before use.</li>
+          <li>Tree is annotated: <code>inttoreal(20)</code> may be inserted if needed.</li>
+        </ul>
+      </div>
+
+      <h5>Phase 4 — Intermediate Code Generation</h5>
+      <div class="answer-block">
+        <p>Generates <strong>three-address code</strong> (TAC) — a machine-independent intermediate form. Each instruction has at most 3 operands.</p>
+        <pre>
+<span class="lbl">L1:</span>  <span class="kw">if</span> i &lt;= num <span class="kw">goto</span> L2
+     <span class="kw">goto</span> L3
+<span class="lbl">L2:</span>  t1 = i * 20
+     sum = sum + t1
+     i = i + 1
+     <span class="kw">goto</span> L1
+<span class="lbl">L3:</span>  ...  <span class="cmt">// exit while</span>
+        </pre>
+      </div>
+
+      <h5>Phase 5 — Code Optimization</h5>
+      <div class="answer-block">
+        <p>Improves intermediate code for speed and space without changing output semantics.</p>
+        <ul>
+          <li><strong>Constant folding:</strong> <code>i * 20</code> → kept (i is variable), but <code>20</code> stays as literal (no computation at compile-time possible).</li>
+          <li><strong>Loop-invariant code motion:</strong> If any computation inside loop doesn't change, move it outside.</li>
+          <li><strong>Strength reduction:</strong> Replace costly ops with cheaper ones.</li>
+        </ul>
+        <pre>
+<span class="cmt">// Optimized: no redundant loads</span>
+<span class="lbl">L1:</span>  <span class="kw">if</span> i &gt; num <span class="kw">goto</span> L3
+     t1 = i * 20
+     sum = sum + t1
+     i = i + 1
+     <span class="kw">goto</span> L1
+<span class="lbl">L3:</span>
+        </pre>
+      </div>
+
+      <h5>Phase 6 — Code Generation</h5>
+      <div class="answer-block">
+        <p>Generates actual <strong>target machine code / assembly</strong>.</p>
+        <pre>
+<span class="lbl">L1:</span>  MOV  R1, i
+     CMP  R1, num
+     JG   L3
+     MOV  R2, R1
+     MUL  R2, #20       <span class="cmt">; t1 = i * 20</span>
+     ADD  sum, R2       <span class="cmt">; sum = sum + t1</span>
+     INC  i
+     JMP  L1
+<span class="lbl">L3:</span>
+        </pre>
+        <p><strong>Symbol Table</strong> is accessed throughout all phases — it stores identifiers, their types, scope, and memory addresses. <strong>Error Handler</strong> catches errors at every phase (lexical errors, syntax errors, type errors, etc.).</p>
+      </div>
+
+      <div class="callout tip">
+        <strong>Exam Tip:</strong> Draw the "phases of compiler" diagram showing flow: Source → Lexer → Parser → Semantic Analyzer → ICG → Optimizer → Code Gen → Target. Always mention Symbol Table and Error Handler as cross-cutting concerns.
+      </div>
+    </div>
+  </div>
+
+  <!-- Q1.2 RE to DFA direct method -->
+  <div class="q-card" id="q1_2">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q2</div>
+      <div class="q-title">
+        <h3>Construct DFA using Direct Method for RE: <code>P(5|7)+(X|M)(F|N)</code> (Product ID pattern)</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 1</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 1)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Step 0 — Frame the Regular Expression</h4>
+        <p>From the specification:</p>
+        <ul>
+          <li>Starts with letter <code>P</code></li>
+          <li>Followed by digits 5 or 7, occurring <em>one or more times</em> → <code>(5|7)+</code></li>
+          <li>Followed by X or M → <code>(X|M)</code></li>
+          <li>Ends with F or N → <code>(F|N)</code></li>
+        </ul>
+        <div class="formula-box">RE: P(5|7)⁺(X|M)(F|N)</div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 1 — Augmented RE and Syntax Tree</h4>
+        <p>Convert <code>(5|7)⁺</code> to <code>(5|7)(5|7)*</code>, then augment with <code>#</code>: <code>P(5|7)(5|7)*(X|M)(F|N)#</code></p>
+        <p>Number each leaf (position) left to right, ignoring <code>|</code> and <code>*</code> nodes:</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Pos</th><th>Symbol</th><th>nullable</th></tr>
+            <tr><td>1</td><td>P</td><td>false</td></tr>
+            <tr><td>2</td><td>5</td><td>false</td></tr>
+            <tr><td>3</td><td>7</td><td>false</td></tr>
+            <tr><td>4</td><td>5</td><td>false</td></tr>
+            <tr><td>5</td><td>7</td><td>false</td></tr>
+            <tr><td>6</td><td>X</td><td>false</td></tr>
+            <tr><td>7</td><td>M</td><td>false</td></tr>
+            <tr><td>8</td><td>F</td><td>false</td></tr>
+            <tr><td>9</td><td>N</td><td>false</td></tr>
+            <tr><td>10</td><td># (end)</td><td>false</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 2 — Compute nullable, firstpos, lastpos</h4>
+        <p><strong>Rules:</strong></p>
+        <ul>
+          <li>Leaf node <code>ε</code>: nullable=true, firstpos={}, lastpos={}</li>
+          <li>Leaf node with symbol at pos <em>i</em>: nullable=false, firstpos={i}, lastpos={i}</li>
+          <li><code>n = cat(c₁,c₂)</code>: nullable = null(c₁) AND null(c₂); firstpos = first(c₁) ∪ (null(c₁)?first(c₂):{}); lastpos = last(c₂) ∪ (null(c₂)?last(c₁):{})</li>
+          <li><code>n = alt(c₁|c₂)</code>: nullable = null(c₁) OR null(c₂); firstpos = first(c₁) ∪ first(c₂); lastpos = last(c₁) ∪ last(c₂)</li>
+          <li><code>n = star(c₁)</code>: nullable=true; firstpos=first(c₁); lastpos=last(c₁)</li>
+        </ul>
+
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Node / Subtree</th><th>nullable</th><th>firstpos</th><th>lastpos</th></tr>
+            <tr><td>pos 1 (P)</td><td>false</td><td>{1}</td><td>{1}</td></tr>
+            <tr><td>pos 2 (5)</td><td>false</td><td>{2}</td><td>{2}</td></tr>
+            <tr><td>pos 3 (7)</td><td>false</td><td>{3}</td><td>{3}</td></tr>
+            <tr><td>(5|7) first</td><td>false</td><td>{2,3}</td><td>{2,3}</td></tr>
+            <tr><td>pos 4 (5)</td><td>false</td><td>{4}</td><td>{4}</td></tr>
+            <tr><td>pos 5 (7)</td><td>false</td><td>{5}</td><td>{5}</td></tr>
+            <tr><td>(5|7) second</td><td>false</td><td>{4,5}</td><td>{4,5}</td></tr>
+            <tr><td>(5|7)* </td><td>true</td><td>{4,5}</td><td>{4,5}</td></tr>
+            <tr><td>(X|M) → pos 6,7</td><td>false</td><td>{6,7}</td><td>{6,7}</td></tr>
+            <tr><td>(F|N) → pos 8,9</td><td>false</td><td>{8,9}</td><td>{8,9}</td></tr>
+            <tr><td># (pos 10)</td><td>false</td><td>{10}</td><td>{10}</td></tr>
+            <tr><td><strong>Root (whole RE#)</strong></td><td>false</td><td><strong>{1}</strong></td><td><strong>{10}</strong></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 3 — Compute followpos</h4>
+        <p><strong>Rules:</strong></p>
+        <ul>
+          <li>For <code>cat(c₁,c₂)</code>: for each pos <em>i</em> in lastpos(c₁), followpos(i) ∪= firstpos(c₂)</li>
+          <li>For <code>star(c₁)</code>: for each pos <em>i</em> in lastpos(c₁), followpos(i) ∪= firstpos(c₁)</li>
+        </ul>
+        <div class="tbl-wrap">
+          <table class="followpos-table">
+            <tr><th>Position</th><th>Symbol</th><th>followpos</th></tr>
+            <tr><td>1</td><td>P</td><td>{2, 3}</td></tr>
+            <tr><td>2</td><td>5</td><td>{4, 5, 6, 7}</td></tr>
+            <tr><td>3</td><td>7</td><td>{4, 5, 6, 7}</td></tr>
+            <tr><td>4</td><td>5</td><td>{4, 5, 6, 7}</td></tr>
+            <tr><td>5</td><td>7</td><td>{4, 5, 6, 7}</td></tr>
+            <tr><td>6</td><td>X</td><td>{8, 9}</td></tr>
+            <tr><td>7</td><td>M</td><td>{8, 9}</td></tr>
+            <tr><td>8</td><td>F</td><td>{10}</td></tr>
+            <tr><td>9</td><td>N</td><td>{10}</td></tr>
+            <tr><td>10</td><td>#</td><td>—</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 4 — Build DFA States</h4>
+        <p>Start state = firstpos(root) = {1}</p>
+        <ul class="steps">
+          <li>State A = {1}. On P → followpos(1) = {2,3} = State B.</li>
+          <li>State B = {2,3}. On 5 → followpos(2)∪followpos(3) for pos that are '5' or '7':<br>
+              On 5 (pos 2): followpos(2)={4,5,6,7} = State C<br>
+              On 7 (pos 3): followpos(3)={4,5,6,7} = State C</li>
+          <li>State C = {4,5,6,7}. On 5 (pos 4): fp={4,5,6,7}=C; On 7(pos 5): fp={4,5,6,7}=C; On X(pos 6): fp={8,9}=D; On M(pos 7): fp={8,9}=D</li>
+          <li>State D = {8,9}. On F(pos 8): fp={10}=E; On N(pos 9): fp={10}=E</li>
+          <li>State E = {10}. 10 is # → <strong>accepting state</strong></li>
+        </ul>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 5 — Transition Table & Diagram</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>State</th><th>P</th><th>5</th><th>7</th><th>X</th><th>M</th><th>F</th><th>N</th></tr>
+            <tr><td>→A</td><td>B</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>B</td><td>—</td><td>C</td><td>C</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>C</td><td>—</td><td>C</td><td>C</td><td>D</td><td>D</td><td>—</td><td>—</td></tr>
+            <tr><td>D</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>E</td><td>E</td></tr>
+            <tr><td>E*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          </table>
+        </div>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 600 120" width="600" height="120">
+            <defs>
+              <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#2d5a8e"/>
+              </marker>
+            </defs>
+            <!-- States -->
+            <circle cx="40" cy="60" r="22" fill="none" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="40" y="64" text-anchor="middle" font-size="12" fill="#2d5a8e">A</text>
+            <circle cx="140" cy="60" r="22" fill="none" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="140" y="64" text-anchor="middle" font-size="12" fill="#2d5a8e">B</text>
+            <circle cx="260" cy="60" r="22" fill="none" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="260" y="64" text-anchor="middle" font-size="12" fill="#2d5a8e">C</text>
+            <circle cx="380" cy="60" r="22" fill="none" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="380" y="64" text-anchor="middle" font-size="12" fill="#2d5a8e">D</text>
+            <circle cx="500" cy="60" r="22" fill="none" stroke="#2d5a8e" stroke-width="2"/>
+            <circle cx="500" cy="60" r="18" fill="none" stroke="#2d5a8e" stroke-width="1.5"/>
+            <text x="500" y="64" text-anchor="middle" font-size="12" fill="#2d5a8e">E*</text>
+            <!-- Arrows -->
+            <line x1="5" y1="60" x2="16" y2="60" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="62" y1="60" x2="116" y2="60" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <text x="89" y="52" text-anchor="middle" font-size="10" fill="#333">P</text>
+            <line x1="162" y1="60" x2="236" y2="60" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <text x="199" y="52" text-anchor="middle" font-size="10" fill="#333">5,7</text>
+            <!-- Self-loop on C -->
+            <path d="M 252 38 Q 260 10 268 38" fill="none" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <text x="260" y="15" text-anchor="middle" font-size="9" fill="#333">5,7</text>
+            <line x1="282" y1="60" x2="356" y2="60" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <text x="319" y="52" text-anchor="middle" font-size="10" fill="#333">X,M</text>
+            <line x1="402" y1="60" x2="476" y2="60" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <text x="439" y="52" text-anchor="middle" font-size="10" fill="#333">F,N</text>
+          </svg>
+          <figcaption>DFA for Product ID Pattern P(5|7)⁺(X|M)(F|N) — A=start, E*=accepting</figcaption>
+        </div>
+        <p><strong>Verification:</strong> "P57557XN" → A→B(P)→C(5)→C(7)→C(5)→C(5)→C(7)→D(X)→E(N) ✓ Accepted</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q1.3 RE to DFA: (ab|c|a)(abc|e)*(bc)* -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q3</div>
+      <div class="q-title">
+        <h3>Convert RE <code>(ab|c|a)(abc|e)*(bc)*</code> into DFA using direct method</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 1</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 2)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Step 1 — Augmented RE</h4>
+        <p>Augment with <code>#</code>: <code>(ab|c|a)(abc|e)*(bc)*#</code></p>
+        <p>Assign positions to all leaves (non-ε symbols):</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Pos</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th></tr>
+            <tr><th>Symbol</th><td>a</td><td>b</td><td>c</td><td>a</td><td>a</td><td>b</td><td>c</td><td>e</td><td>b</td><td>c</td><td>#</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 2 — nullable, firstpos, lastpos for key nodes</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Expression Part</th><th>nullable</th><th>firstpos</th><th>lastpos</th></tr>
+            <tr><td>ab (cat)</td><td>false</td><td>{1}</td><td>{2}</td></tr>
+            <tr><td>c (pos 3)</td><td>false</td><td>{3}</td><td>{3}</td></tr>
+            <tr><td>a (pos 4)</td><td>false</td><td>{4}</td><td>{4}</td></tr>
+            <tr><td>(ab|c|a)</td><td>false</td><td>{1,3,4}</td><td>{2,3,4}</td></tr>
+            <tr><td>abc (positions 5,6,7)</td><td>false</td><td>{5}</td><td>{7}</td></tr>
+            <tr><td>e (pos 8)</td><td>false</td><td>{8}</td><td>{8}</td></tr>
+            <tr><td>(abc|e)</td><td>false</td><td>{5,8}</td><td>{7,8}</td></tr>
+            <tr><td>(abc|e)*</td><td>true</td><td>{5,8}</td><td>{7,8}</td></tr>
+            <tr><td>bc (positions 9,10)</td><td>false</td><td>{9}</td><td>{10}</td></tr>
+            <tr><td>(bc)*</td><td>true</td><td>{9}</td><td>{10}</td></tr>
+            <tr><td># (pos 11)</td><td>false</td><td>{11}</td><td>{11}</td></tr>
+            <tr><td><strong>Root (whole)</strong></td><td>false</td><td>{1,3,4}</td><td>{11}</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 3 — followpos table</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Pos</th><th>Symbol</th><th>followpos</th><th>Reason</th></tr>
+            <tr><td>1</td><td>a</td><td>{2}</td><td>cat(a,b): lastpos(a)={1}→firstpos(b)={2}</td></tr>
+            <tr><td>2</td><td>b</td><td>{5,8,9,11}</td><td>lastpos of (ab) in concat with rest</td></tr>
+            <tr><td>3</td><td>c</td><td>{5,8,9,11}</td><td>same concat</td></tr>
+            <tr><td>4</td><td>a</td><td>{5,8,9,11}</td><td>same concat</td></tr>
+            <tr><td>5</td><td>a</td><td>{6}</td><td>cat a→b in abc</td></tr>
+            <tr><td>6</td><td>b</td><td>{7}</td><td>cat b→c in abc</td></tr>
+            <tr><td>7</td><td>c</td><td>{5,8,9,11}</td><td>star loop + next</td></tr>
+            <tr><td>8</td><td>e</td><td>{5,8,9,11}</td><td>star loop + next</td></tr>
+            <tr><td>9</td><td>b</td><td>{10}</td><td>cat b→c in bc</td></tr>
+            <tr><td>10</td><td>c</td><td>{9,11}</td><td>star loop on (bc)* + #</td></tr>
+            <tr><td>11</td><td>#</td><td>—</td><td>end marker</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 4 — DFA State Construction</h4>
+        <ul class="steps">
+          <li><strong>S0 = {1,3,4}</strong> (firstpos of root)</li>
+          <li>From S0: on 'a' → union of fp of positions with 'a' in S0 = fp(1)∪fp(4) = {2}∪{5,8,9,11} = <strong>{2,5,8,9,11} = S1</strong><br>on 'c' → fp(3) = <strong>{5,8,9,11} = S2</strong></li>
+          <li>S1={2,5,8,9,11}: on 'b'→fp(2)∪fp(9)={5,8,9,11}∪{10}=<strong>{5,8,9,10,11}=S3</strong>; on 'a'→fp(5)={6}=<strong>{6}=S4</strong>; on 'e'→fp(8)={5,8,9,11}=S2; on 'c'→fp(10)={9,11}∪... ={9,11}=<strong>S5</strong></li>
+          <li>S2={5,8,9,11}: on 'a'→fp(5)={6}=S4; on 'e'→fp(8)=S2; on 'b'→fp(9)={10}=<strong>{10}=S6</strong>. S2 contains pos 11 → <strong>accepting</strong></li>
+          <li>S3={5,8,9,10,11}: contains 11 → <strong>accepting</strong>; on 'b'→fp(9)={10}, on 'c'→fp(7)∪fp(10)={5,8,9,11}∪{9,11}=S2∪{10}=S3</li>
+          <li>States containing pos 11 are accepting states: S1(✓), S2(✓), S3(✓), S5(✓)</li>
+        </ul>
+        <div class="callout info"><strong>Accepting states:</strong> Any DFA state set that contains position 11 (the # marker) is an accepting state.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== MODULE 2 ===================== -->
+<div class="container" id="mod2">
+  <div class="section-divider"></div>
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>Module 2 — Syntax Analysis</h2>
+  </div>
+
+  <!-- Q2.1 LL(1) Grammar G -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q4</div>
+      <div class="q-title">
+        <h3>Determine if Grammar G is LL(1): <code>B → BB | B# | B&&B | (B) | a | b</code></h3>
+        <div class="q-meta">
+          <span class="tag module">Module 2</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 1)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Step 1 — Identify the Grammar</h4>
+        <p>Non-terminal: B. Terminals: #, &, (, ), a, b. Productions:</p>
+        <pre>
+B → BB
+B → B#
+B → B&&B    (note: & repeated for && operator)
+B → (B)
+B → a
+B → b
+        </pre>
+        <div class="callout warn"><strong>Observation:</strong> This grammar is <em>left-recursive</em> (B → BB, B → B#, B → B&&B). LL(1) parsers cannot handle left recursion. We must first <strong>eliminate left recursion</strong>.</div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 2 — Eliminate Left Recursion</h4>
+        <p>Left-recursive productions: B → BB | B# | B&&B (all start with B). Non-left-recursive: B → (B) | a | b</p>
+        <p>Apply standard left recursion elimination: A → Aα₁|Aα₂|…|β becomes A → βA', A' → α₁A'|α₂A'|ε</p>
+        <p>Here β = (B) | a | b and α₁ = B (from BB), α₂ = # (from B#), α₃ = &&B (from B&&B)</p>
+        <pre>
+B  → (B)B' | aB' | bB'
+B' → BB' | #B' | &&BB' | ε
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 3 — Compute FIRST and FOLLOW</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Non-terminal</th><th>FIRST</th><th>FOLLOW</th></tr>
+            <tr><td>B</td><td>{ (, a, b }</td><td>{ ), #, &, $, (, a, b }</td></tr>
+            <tr><td>B'</td><td>{ (, a, b, #, &, ε }</td><td>{ ), $, #, & }</td></tr>
+          </table>
+        </div>
+        <p><strong>FIRST calculation:</strong><br>
+        FIRST(B) = FIRST((B)B') ∪ FIRST(aB') ∪ FIRST(bB') = {(} ∪ {a} ∪ {b} = {(, a, b}<br>
+        FIRST(B') = FIRST(BB') ∪ FIRST(#B') ∪ FIRST(&&BB') ∪ {ε} = {(,a,b} ∪ {#} ∪ {&} ∪ {ε}</p>
+        <p><strong>FOLLOW calculation:</strong><br>
+        FOLLOW(B) = {$} (start symbol). Also wherever B appears on RHS: in (B)B' → ) is after B; in BB' → FIRST(B')\{ε} and since B' is nullable, FOLLOW(B) added. In &&BB' → FOLLOW(B).<br>
+        FOLLOW(B') = FOLLOW(B) since B → ...B' and B' can appear at end.</p>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 4 — Predictive Parsing Table</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th></th><th>(</th><th>)</th><th>a</th><th>b</th><th>#</th><th>&amp;&amp;</th><th>$</th></tr>
+            <tr><td><strong>B</strong></td><td>B→(B)B'</td><td>—</td><td>B→aB'</td><td>B→bB'</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td><strong>B'</strong></td><td>B'→BB'</td><td>B'→ε</td><td>B'→BB'</td><td>B'→BB'</td><td>B'→#B'</td><td>B'→&&BB'</td><td>B'→ε</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 5 — Justify: Is it LL(1)?</h4>
+        <div class="callout warn">
+          <strong>The grammar is NOT LL(1)</strong> even after left recursion elimination, because:
+          <ul style="margin-top:0.5rem">
+            <li>B'[(] has entry B'→BB' (from FIRST(BB')={( a b})</li>
+            <li>B'[a] has entry B'→BB' — no conflict here individually</li>
+            <li>However, B' is nullable and FIRST(B') ∩ FOLLOW(B') ≠ ∅ for some entries creates potential ambiguity in the original grammar.</li>
+            <li>More critically, the original grammar G = B → BB | ... is <strong>ambiguous</strong> (BB can be parsed multiple ways). Ambiguous grammars are inherently not LL(1).</li>
+          </ul>
+          <strong>Conclusion:</strong> G is not LL(1) because (1) it is left-recursive and (2) the underlying grammar is ambiguous. After transformation, the parsing table has no multi-entry conflicts but the grammar semantics remain ambiguous.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2.2 Predictive Parsing expr grammar -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q5</div>
+      <div class="q-title">
+        <h3>Predictive Parsing for grammar: expr→expr or term|term, term→term and factor|factor, factor→not factor|(expr)|true|false</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 2</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 2)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Step 1 — Eliminate Left Recursion</h4>
+        <p>Left-recursive: expr→expr or term, term→term and factor. Apply elimination:</p>
+        <pre>
+expr  → term expr'
+expr' → or term expr' | ε
+term  → factor term'
+term' → and factor term' | ε
+factor → not factor | (expr) | true | false
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 2 — FIRST and FOLLOW Sets</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Non-terminal</th><th>FIRST</th><th>FOLLOW</th></tr>
+            <tr><td>expr</td><td>{not, (, true, false}</td><td>{$, )}</td></tr>
+            <tr><td>expr'</td><td>{or, ε}</td><td>{$, )}</td></tr>
+            <tr><td>term</td><td>{not, (, true, false}</td><td>{or, $, )}</td></tr>
+            <tr><td>term'</td><td>{and, ε}</td><td>{or, $, )}</td></tr>
+            <tr><td>factor</td><td>{not, (, true, false}</td><td>{and, or, $, )}</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 3 — Parsing Table</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th></th><th>not</th><th>(</th><th>)</th><th>true</th><th>false</th><th>or</th><th>and</th><th>$</th></tr>
+            <tr><td><strong>expr</strong></td><td>→term expr'</td><td>→term expr'</td><td></td><td>→term expr'</td><td>→term expr'</td><td></td><td></td><td></td></tr>
+            <tr><td><strong>expr'</strong></td><td></td><td></td><td>→ε</td><td></td><td></td><td>→or term expr'</td><td></td><td>→ε</td></tr>
+            <tr><td><strong>term</strong></td><td>→factor term'</td><td>→factor term'</td><td></td><td>→factor term'</td><td>→factor term'</td><td></td><td></td><td></td></tr>
+            <tr><td><strong>term'</strong></td><td></td><td></td><td>→ε</td><td></td><td></td><td>→ε</td><td>→and factor term'</td><td>→ε</td></tr>
+            <tr><td><strong>factor</strong></td><td>→not factor</td><td>→(expr)</td><td></td><td>→true</td><td>→false</td><td></td><td></td><td></td></tr>
+          </table>
+        </div>
+        <p>No cell has more than one entry → <strong>Grammar IS LL(1) ✓</strong></p>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 4 — Parse: "not (true or false)"</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Stack</th><th>Input</th><th>Action</th></tr>
+            <tr><td>$expr</td><td>not(true or false)$</td><td>expr→term expr'</td></tr>
+            <tr><td>$expr' term</td><td>not(true or false)$</td><td>term→factor term'</td></tr>
+            <tr><td>$expr' term' factor</td><td>not(true or false)$</td><td>factor→not factor</td></tr>
+            <tr><td>$expr' term' factor not</td><td>not(true or false)$</td><td>match not</td></tr>
+            <tr><td>$expr' term' factor</td><td>(true or false)$</td><td>factor→(expr)</td></tr>
+            <tr><td>$expr' term' ) expr (</td><td>(true or false)$</td><td>match (</td></tr>
+            <tr><td>$expr' term' ) expr</td><td>true or false)$</td><td>expr→term expr'</td></tr>
+            <tr><td>$expr' term' ) expr' term</td><td>true or false)$</td><td>term→factor term'</td></tr>
+            <tr><td>$expr' term' ) expr' term' factor</td><td>true or false)$</td><td>factor→true</td></tr>
+            <tr><td>$expr' term' ) expr' term' true</td><td>true or false)$</td><td>match true</td></tr>
+            <tr><td>$expr' term' ) expr' term'</td><td>or false)$</td><td>term'→ε</td></tr>
+            <tr><td>$expr' term' ) expr'</td><td>or false)$</td><td>expr'→or term expr'</td></tr>
+            <tr><td>$expr' term' ) expr' term or</td><td>or false)$</td><td>match or</td></tr>
+            <tr><td>$expr' term' ) expr' term</td><td>false)$</td><td>term→factor term'</td></tr>
+            <tr><td>$expr' term' ) expr' term' factor</td><td>false)$</td><td>factor→false</td></tr>
+            <tr><td>$expr' term' ) expr' term' false</td><td>false)$</td><td>match false</td></tr>
+            <tr><td>$expr' term' ) expr' term'</td><td>)$</td><td>term'→ε</td></tr>
+            <tr><td>$expr' term' ) expr'</td><td>)$</td><td>expr'→ε</td></tr>
+            <tr><td>$expr' term' )</td><td>)$</td><td>match )</td></tr>
+            <tr><td>$expr' term'</td><td>$</td><td>term'→ε</td></tr>
+            <tr><td>$expr'</td><td>$</td><td>expr'→ε</td></tr>
+            <tr><td>$</td><td>$</td><td><strong>ACCEPT ✓</strong></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2.3 CLR Parsing -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q6</div>
+      <div class="q-title">
+        <h3>CLR(1) Parsing — Grammar: S→xAz, A→A@B|B, B→&C#|p, C→%C|q</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 2</span>
+          <span class="tag marks">15 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 1)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Augmented Grammar (numbered)</h4>
+        <pre>
+0: S' → S
+1: S  → xAz
+2: A  → A@B
+3: A  → B
+4: B  → &C#
+5: B  → p
+6: C  → %C
+7: C  → q
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>LR(1) Items — Canonical Collection</h4>
+        <p>LR(1) items are of form [A→α·β, a] where 'a' is lookahead.</p>
+        
+        <h5>I0 — Start State</h5>
+        <pre>
+[S'→·S, $]
+[S →·xAz, $]
+        </pre>
+
+        <h5>I1 — goto(I0, S)</h5>
+        <pre>[S'→S·, $]  ← ACCEPT state</pre>
+
+        <h5>I2 — goto(I0, x)</h5>
+        <pre>
+[S→x·Az, $]
+[A→·A@B, z/@]
+[A→·B, z/@]
+[B→·&C#, z/@]
+[B→·p, z/@]
+        </pre>
+
+        <h5>I3 — goto(I2, A)</h5>
+        <pre>
+[S→xA·z, $]
+[A→A·@B, z/@]
+        </pre>
+
+        <h5>I4 — goto(I2, B)</h5>
+        <pre>[A→B·, z/@]  ← REDUCE by A→B</pre>
+
+        <h5>I5 — goto(I2, &)</h5>
+        <pre>
+[B→&·C#, z/@]
+[C→·%C, #]
+[C→·q, #]
+        </pre>
+
+        <h5>I6 — goto(I2, p)</h5>
+        <pre>[B→p·, z/@]  ← REDUCE by B→p</pre>
+
+        <h5>I7 — goto(I3, z)</h5>
+        <pre>[S→xAz·, $]  ← REDUCE by S→xAz</pre>
+
+        <h5>I8 — goto(I3, @)</h5>
+        <pre>
+[A→A@·B, z/@]
+[B→·&C#, z/@]
+[B→·p, z/@]
+        </pre>
+
+        <h5>I9 — goto(I5, C)</h5>
+        <pre>[B→&C·#, z/@]</pre>
+
+        <h5>I10 — goto(I5, %)</h5>
+        <pre>
+[C→%·C, #]
+[C→·%C, #]
+[C→·q, #]
+        </pre>
+
+        <h5>I11 — goto(I5, q)</h5>
+        <pre>[C→q·, #]  ← REDUCE by C→q</pre>
+
+        <h5>I12 — goto(I8, B)</h5>
+        <pre>[A→A@B·, z/@]  ← REDUCE by A→A@B</pre>
+
+        <h5>I13 — goto(I8, &) = same structure as I5 but propagated</h5>
+        <p>goto(I8,&): [B→&·C#,z/@], etc. (similar to I5)</p>
+
+        <h5>I14 — goto(I8, p)</h5>
+        <pre>[B→p·, z/@]  ← same as I6</pre>
+
+        <h5>I15 — goto(I9, #)</h5>
+        <pre>[B→&C#·, z/@]  ← REDUCE by B→&C#</pre>
+
+        <h5>I16 — goto(I10, C)</h5>
+        <pre>[C→%C·, #]  ← REDUCE by C→%C</pre>
+
+        <h5>I17 — goto(I10, %)</h5>
+        <p>= I10 (same closure)</p>
+
+        <h5>I18 — goto(I10, q)</h5>
+        <pre>[C→q·, #] same as I11</pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>CLR(1) Parsing Table (partial, key entries)</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>State</th><th>x</th><th>z</th><th>@</th><th>&</th><th>p</th><th>#</th><th>%</th><th>q</th><th>$</th><th>S</th><th>A</th><th>B</th><th>C</th></tr>
+            <tr><td>0</td><td>s2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>1</td><td></td><td></td><td></td></tr>
+            <tr><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>acc</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>2</td><td></td><td></td><td></td><td>s5</td><td>s6</td><td></td><td></td><td></td><td></td><td></td><td>3</td><td>4</td><td></td></tr>
+            <tr><td>3</td><td></td><td>s7</td><td>s8</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>4</td><td></td><td>r3</td><td>r3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>5</td><td></td><td></td><td></td><td></td><td></td><td></td><td>s10</td><td>s11</td><td></td><td></td><td></td><td></td><td>9</td></tr>
+            <tr><td>6</td><td></td><td>r5</td><td>r5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>7</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>r1</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>8</td><td></td><td></td><td></td><td>s13</td><td>s14</td><td></td><td></td><td></td><td></td><td></td><td></td><td>12</td><td></td></tr>
+            <tr><td>9</td><td></td><td></td><td></td><td></td><td></td><td>s15</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>10</td><td></td><td></td><td></td><td></td><td></td><td></td><td>s10</td><td>s11</td><td></td><td></td><td></td><td></td><td>16</td></tr>
+            <tr><td>11</td><td></td><td></td><td></td><td></td><td></td><td>r7</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>12</td><td></td><td>r2</td><td>r2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>15</td><td></td><td>r4</td><td>r4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>16</td><td></td><td></td><td></td><td></td><td></td><td>r6</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          </table>
+        </div>
+        <p><em>sN = shift to state N; rN = reduce by production N; acc = accept</em></p>
+      </div>
+
+      <div class="answer-block">
+        <h4>Parse String: "xp@&%q#z"</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Stack</th><th>Input</th><th>Action</th></tr>
+            <tr><td>0</td><td>xp@&&%q#z$</td><td>shift x → goto 2</td></tr>
+            <tr><td>0 x 2</td><td>p@&%q#z$</td><td>shift p → goto 6</td></tr>
+            <tr><td>0 x 2 p 6</td><td>@&%q#z$</td><td>reduce r5: B→p, goto(2,B)=4</td></tr>
+            <tr><td>0 x 2 B 4</td><td>@&%q#z$</td><td>reduce r3: A→B, goto(2,A)=3</td></tr>
+            <tr><td>0 x 2 A 3</td><td>@&%q#z$</td><td>shift @ → goto 8</td></tr>
+            <tr><td>0 x 2 A 3 @ 8</td><td>&%q#z$</td><td>shift & → goto 13</td></tr>
+            <tr><td>0 x 2 A 3 @ 8 & 13</td><td>%q#z$</td><td>shift % → goto 10</td></tr>
+            <tr><td>0 x 2 A 3 @ 8 & 13 % 10</td><td>q#z$</td><td>shift q → goto 11</td></tr>
+            <tr><td>0 x 2 A 3 @ 8 & 13 % 10 q 11</td><td>#z$</td><td>reduce r7: C→q, goto(10,C)=16</td></tr>
+            <tr><td>0 x 2 A 3 @ 8 & 13 % 10 C 16</td><td>#z$</td><td>reduce r6: C→%C, goto(13,C)=9</td></tr>
+            <tr><td>0 x 2 A 3 @ 8 & 13 C 9</td><td>#z$</td><td>shift # → goto 15</td></tr>
+            <tr><td>0 x 2 A 3 @ 8 & 13 C 9 # 15</td><td>z$</td><td>reduce r4: B→&C#, goto(8,B)=12</td></tr>
+            <tr><td>0 x 2 A 3 @ 8 B 12</td><td>z$</td><td>reduce r2: A→A@B, goto(2,A)=3</td></tr>
+            <tr><td>0 x 2 A 3</td><td>z$</td><td>shift z → goto 7</td></tr>
+            <tr><td>0 x 2 A 3 z 7</td><td>$</td><td>reduce r1: S→xAz, goto(0,S)=1</td></tr>
+            <tr><td>0 S 1</td><td>$</td><td><strong>ACCEPT ✓</strong></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== MODULE 3 ===================== -->
+<div class="container" id="mod3">
+  <div class="section-divider"></div>
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>Module 3 — Semantic Analysis & SDT</h2>
+  </div>
+
+  <!-- Q3.1 Hex to Decimal SDT -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q7</div>
+      <div class="q-title">
+        <h3>Construct grammar and SDT to convert hexadecimal to decimal. Parse "A35D9".</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 3</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 1)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Grammar for Hexadecimal Numbers</h4>
+        <pre>
+Number → Number HexDigit | HexDigit
+HexDigit → 0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F
+        </pre>
+        <p>Alternatively (left-recursive, bottom-up friendly):</p>
+        <pre>
+N → N H | H
+H → 0|1|...|9|A|B|C|D|E|F
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Syntax Directed Translation Scheme (SDT)</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Production</th><th>Semantic Rule</th></tr>
+            <tr><td>N → N₁ H</td><td>N.val = N₁.val * 16 + H.val</td></tr>
+            <tr><td>N → H</td><td>N.val = H.val</td></tr>
+            <tr><td>H → 0</td><td>H.val = 0</td></tr>
+            <tr><td>H → 1...9</td><td>H.val = digit value (1–9)</td></tr>
+            <tr><td>H → A</td><td>H.val = 10</td></tr>
+            <tr><td>H → B</td><td>H.val = 11</td></tr>
+            <tr><td>H → C</td><td>H.val = 12</td></tr>
+            <tr><td>H → D</td><td>H.val = 13</td></tr>
+            <tr><td>H → E</td><td>H.val = 14</td></tr>
+            <tr><td>H → F</td><td>H.val = 15</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Parse "A35D9" with Annotated Parse Tree</h4>
+        <p>Hex A35D9 = A×16⁴ + 3×16³ + 5×16² + D×16 + 9</p>
+        <p>= 10×65536 + 3×4096 + 5×256 + 13×16 + 9</p>
+        <p>= 655360 + 12288 + 1280 + 208 + 9 = <strong>669,145</strong></p>
+
+        <p>Bottom-up evaluation:</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Step</th><th>Production Applied</th><th>Value Computed</th></tr>
+            <tr><td>1</td><td>H → A</td><td>H.val = 10</td></tr>
+            <tr><td>2</td><td>N → H</td><td>N.val = 10</td></tr>
+            <tr><td>3</td><td>H → 3</td><td>H.val = 3</td></tr>
+            <tr><td>4</td><td>N → N H</td><td>N.val = 10×16+3 = 163</td></tr>
+            <tr><td>5</td><td>H → 5</td><td>H.val = 5</td></tr>
+            <tr><td>6</td><td>N → N H</td><td>N.val = 163×16+5 = 2613</td></tr>
+            <tr><td>7</td><td>H → D</td><td>H.val = 13</td></tr>
+            <tr><td>8</td><td>N → N H</td><td>N.val = 2613×16+13 = 41821</td></tr>
+            <tr><td>9</td><td>H → 9</td><td>H.val = 9</td></tr>
+            <tr><td>10</td><td>N → N H</td><td>N.val = 41821×16+9 = <strong>669,145</strong></td></tr>
+          </table>
+        </div>
+        <p>Verification: A35D9₁₆ = 669,145₁₀ ✓</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== MODULE 4 ===================== -->
+<div class="container" id="mod4">
+  <div class="section-divider"></div>
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <h2>Module 4 — Intermediate Code Generation</h2>
+  </div>
+
+  <!-- Q4.1 Three-address code max of three -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q8</div>
+      <div class="q-title">
+        <h3>Generate three-address code using short-circuit for finding max of three numbers. Represent in quadruple form.</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 4</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 1)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Source Code</h4>
+        <pre>
+<span class="kw">if</span> (a >= b && a >= c)
+    max = a;
+<span class="kw">else if</span> (b >= a && b >= c)
+    max = b;
+<span class="kw">else</span>
+    max = c;
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Three-Address Code (Short-Circuit Evaluation)</h4>
+        <p>In short-circuit, <code>&&</code> and <code>||</code> use conditional jumps — if the first operand determines the result, the second is skipped.</p>
+        <pre>
+<span class="num">100:</span>  <span class="kw">if</span> a >= b <span class="kw">goto</span> 102
+<span class="num">101:</span>  <span class="kw">goto</span> 107        <span class="cmt">; a < b, skip to else-if</span>
+<span class="num">102:</span>  <span class="kw">if</span> a >= c <span class="kw">goto</span> 104
+<span class="num">103:</span>  <span class="kw">goto</span> 107        <span class="cmt">; a >= b but a < c</span>
+<span class="num">104:</span>  max = a          <span class="cmt">; both conditions true</span>
+<span class="num">105:</span>  <span class="kw">goto</span> 116        <span class="cmt">; skip remaining</span>
+<span class="num">106:</span>  <span class="kw">goto</span> 116
+<span class="num">107:</span>  <span class="kw">if</span> b >= a <span class="kw">goto</span> 109
+<span class="num">108:</span>  <span class="kw">goto</span> 113
+<span class="num">109:</span>  <span class="kw">if</span> b >= c <span class="kw">goto</span> 111
+<span class="num">110:</span>  <span class="kw">goto</span> 113
+<span class="num">111:</span>  max = b
+<span class="num">112:</span>  <span class="kw">goto</span> 116
+<span class="num">113:</span>  max = c
+<span class="num">116:</span>  ...
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Quadruple Representation</h4>
+        <p>Quadruple form: (operator, arg1, arg2, result)</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>#</th><th>Operator</th><th>Arg1</th><th>Arg2</th><th>Result</th></tr>
+            <tr><td>100</td><td>if_geq</td><td>a</td><td>b</td><td>goto 102</td></tr>
+            <tr><td>101</td><td>goto</td><td>—</td><td>—</td><td>107</td></tr>
+            <tr><td>102</td><td>if_geq</td><td>a</td><td>c</td><td>goto 104</td></tr>
+            <tr><td>103</td><td>goto</td><td>—</td><td>—</td><td>107</td></tr>
+            <tr><td>104</td><td>=</td><td>a</td><td>—</td><td>max</td></tr>
+            <tr><td>105</td><td>goto</td><td>—</td><td>—</td><td>116</td></tr>
+            <tr><td>107</td><td>if_geq</td><td>b</td><td>a</td><td>goto 109</td></tr>
+            <tr><td>108</td><td>goto</td><td>—</td><td>—</td><td>113</td></tr>
+            <tr><td>109</td><td>if_geq</td><td>b</td><td>c</td><td>goto 111</td></tr>
+            <tr><td>110</td><td>goto</td><td>—</td><td>—</td><td>113</td></tr>
+            <tr><td>111</td><td>=</td><td>b</td><td>—</td><td>max</td></tr>
+            <tr><td>112</td><td>goto</td><td>—</td><td>—</td><td>116</td></tr>
+            <tr><td>113</td><td>=</td><td>c</td><td>—</td><td>max</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4.2 Back-patching -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q9</div>
+      <div class="q-title">
+        <h3>Apply back-patching for: <code>while(x&lt;200 || y&lt;400){ i=0; while(i&lt;10){p=p+i; i=i+1;} x=x+p; y=y+p; }</code></h3>
+        <div class="q-meta">
+          <span class="tag module">Module 4</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 1)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>What is Back-Patching?</h4>
+        <p>Back-patching is a technique used in one-pass code generation for boolean expressions and control flow statements. When a conditional jump is generated, the <strong>target label is unknown</strong> yet, so we write a placeholder. When the target becomes known, we go back and fill in the label — this is <strong>patching</strong>.</p>
+        <p>Key functions:</p>
+        <ul>
+          <li><code>makelist(i)</code> — creates a new list with instruction i</li>
+          <li><code>merge(p1, p2)</code> — merges two lists</li>
+          <li><code>backpatch(p, i)</code> — fills target i into all instructions in list p</li>
+          <li><code>nextquad</code> — the index of the next instruction to be generated</li>
+        </ul>
+      </div>
+
+      <div class="answer-block">
+        <h4>Generated Three-Address Code with Back-Patching</h4>
+        <pre>
+<span class="cmt">--- OUTER WHILE: while(x < 200 || y < 400) ---</span>
+<span class="num">100:</span>  <span class="kw">if</span> x &lt; 200 <span class="kw">goto</span> 103    <span class="cmt">; truelist1 = {100}</span>
+<span class="num">101:</span>  <span class="kw">goto</span> 102                  <span class="cmt">; falselist1 = {101}</span>
+<span class="num">102:</span>  <span class="kw">if</span> y &lt; 400 <span class="kw">goto</span> _        <span class="cmt">; truelist2 — target unknown yet</span>
+<span class="num">103:</span>  <span class="kw">goto</span> _                    <span class="cmt">; falselist — target unknown yet</span>
+
+<span class="cmt">Backpatch(truelist1, 103) — fills: "if x<200 goto 103" ✓</span>
+<span class="cmt">truelist(||) = merge(truelist1, truelist2) = {100, 102} → both goto body</span>
+<span class="cmt">falselist(||) = falselist2 = {103}</span>
+<span class="cmt">Backpatch(truelist(||), 104) — body starts at 104</span>
+
+<span class="cmt">--- BODY: i = 0 ---</span>
+<span class="num">104:</span>  i = 0
+
+<span class="cmt">--- INNER WHILE: while(i < 10) ---</span>
+<span class="num">105:</span>  <span class="kw">if</span> i &lt; 10 <span class="kw">goto</span> _        <span class="cmt">; truelist = {105}</span>
+<span class="num">106:</span>  <span class="kw">goto</span> _                    <span class="cmt">; falselist = {106}</span>
+
+<span class="cmt">Backpatch(truelist, 107)</span>
+
+<span class="cmt">--- INNER BODY ---</span>
+<span class="num">107:</span>  t1 = p + i
+<span class="num">108:</span>  p = t1
+<span class="num">109:</span>  t2 = i + 1
+<span class="num">110:</span>  i = t2
+<span class="num">111:</span>  <span class="kw">goto</span> 105               <span class="cmt">; loop back to inner while test</span>
+
+<span class="cmt">Backpatch(falselist of inner while, 112)</span>
+
+<span class="cmt">--- AFTER INNER WHILE ---</span>
+<span class="num">112:</span>  t3 = x + p
+<span class="num">113:</span>  x = t3
+<span class="num">114:</span>  t4 = y + p
+<span class="num">115:</span>  y = t4
+<span class="num">116:</span>  <span class="kw">goto</span> 100               <span class="cmt">; loop back to outer while test</span>
+
+<span class="cmt">Backpatch(falselist of outer while {103}, 117)</span>
+<span class="num">117:</span>  ...                      <span class="cmt">; exit</span>
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Summary of Back-Patch Operations</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Operation</th><th>List / Instructions Patched</th><th>Target</th></tr>
+            <tr><td>Backpatch(truelist1, 103)</td><td>Instruction 100</td><td>103</td></tr>
+            <tr><td>Backpatch(truelist_OR, 104)</td><td>Instructions {100,102}</td><td>104</td></tr>
+            <tr><td>Backpatch(truelist_inner, 107)</td><td>Instruction 105</td><td>107</td></tr>
+            <tr><td>Backpatch(falselist_inner, 112)</td><td>Instruction 106</td><td>112</td></tr>
+            <tr><td>Backpatch(falselist_outer, 117)</td><td>Instruction 103</td><td>117</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <strong>Key Exam Points for Back-Patching:</strong> Always show (1) which instruction has the unresolved jump, (2) what list it goes into (truelist/falselist), (3) when and to what address it gets patched. Draw the annotated parse tree with lists labelled at each node.
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4.3 Three-address for if-else with short circuit -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q10</div>
+      <div class="q-title">
+        <h3>Three-address code + quadruples/triples/indirect triples for: <code>If((a==1 &amp;&amp; a==0)||(a&lt;b &amp;&amp; a&gt;c)) y=1 else y=0</code></h3>
+        <div class="q-meta">
+          <span class="tag module">Module 4</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 2)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Three-Address Code</h4>
+        <pre>
+<span class="cmt">--- Condition: (a==1 && a==0) || (a&lt;b && a&gt;c) ---</span>
+<span class="num">1:</span>   <span class="kw">if</span> a == 1 <span class="kw">goto</span> 3
+<span class="num">2:</span>   <span class="kw">goto</span> 7           <span class="cmt">; a != 1, first && fails, try ||</span>
+<span class="num">3:</span>   <span class="kw">if</span> a == 0 <span class="kw">goto</span> 9  <span class="cmt">; first part true → go to then</span>
+<span class="num">4:</span>   <span class="kw">goto</span> 5           <span class="cmt">; first && false</span>
+<span class="num">5:</span>   <span class="kw">if</span> a &lt; b <span class="kw">goto</span> 6  <span class="cmt">; (Note: a==1&&a==0 is always false)</span>
+<span class="num">6:</span>   <span class="kw">goto</span> 11          <span class="cmt">; false branch</span>
+<span class="num">7:</span>   <span class="kw">if</span> a &lt; b <span class="kw">goto</span> 8
+<span class="num">8:</span>   <span class="kw">goto</span> 11
+<span class="num">9:</span>   <span class="kw">if</span> a &gt; c <span class="kw">goto</span> 10
+<span class="num">10:</span>  <span class="kw">goto</span> 11
+<span class="num">11:</span>  <span class="kw">if</span> a &gt; c <span class="kw">goto</span> 13   <span class="cmt">; second && second part</span>
+<span class="cmt">--- Simplified cleaner version ---</span>
+<span class="num">1:</span>   t1 = (a == 1)
+<span class="num">2:</span>   t2 = (a == 0)
+<span class="num">3:</span>   t3 = t1 &amp;&amp; t2
+<span class="num">4:</span>   t4 = (a &lt; b)
+<span class="num">5:</span>   t5 = (a &gt; c)
+<span class="num">6:</span>   t6 = t4 &amp;&amp; t5
+<span class="num">7:</span>   t7 = t3 || t6
+<span class="num">8:</span>   <span class="kw">if</span> t7 == true <span class="kw">goto</span> 10
+<span class="num">9:</span>   <span class="kw">goto</span> 11
+<span class="num">10:</span>  y = 1
+<span class="num">11:</span>  <span class="kw">goto</span> 12
+<span class="num">12:</span>  y = 0   <span class="cmt">; else branch</span>
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Quadruples (operator, arg1, arg2, result)</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Index</th><th>Op</th><th>Arg1</th><th>Arg2</th><th>Result</th></tr>
+            <tr><td>(0)</td><td>==</td><td>a</td><td>1</td><td>t1</td></tr>
+            <tr><td>(1)</td><td>==</td><td>a</td><td>0</td><td>t2</td></tr>
+            <tr><td>(2)</td><td>&&</td><td>t1</td><td>t2</td><td>t3</td></tr>
+            <tr><td>(3)</td><td>&lt;</td><td>a</td><td>b</td><td>t4</td></tr>
+            <tr><td>(4)</td><td>&gt;</td><td>a</td><td>c</td><td>t5</td></tr>
+            <tr><td>(5)</td><td>&&</td><td>t4</td><td>t5</td><td>t6</td></tr>
+            <tr><td>(6)</td><td>||</td><td>t3</td><td>t6</td><td>t7</td></tr>
+            <tr><td>(7)</td><td>if_true</td><td>t7</td><td>—</td><td>(9)</td></tr>
+            <tr><td>(8)</td><td>goto</td><td>—</td><td>—</td><td>(10)</td></tr>
+            <tr><td>(9)</td><td>=</td><td>1</td><td>—</td><td>y</td></tr>
+            <tr><td>(10)</td><td>=</td><td>0</td><td>—</td><td>y</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Triples (op, arg1, arg2) — no explicit result</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Index</th><th>Op</th><th>Arg1</th><th>Arg2</th></tr>
+            <tr><td>(0)</td><td>==</td><td>a</td><td>1</td></tr>
+            <tr><td>(1)</td><td>==</td><td>a</td><td>0</td></tr>
+            <tr><td>(2)</td><td>&&</td><td>(0)</td><td>(1)</td></tr>
+            <tr><td>(3)</td><td>&lt;</td><td>a</td><td>b</td></tr>
+            <tr><td>(4)</td><td>&gt;</td><td>a</td><td>c</td></tr>
+            <tr><td>(5)</td><td>&&</td><td>(3)</td><td>(4)</td></tr>
+            <tr><td>(6)</td><td>||</td><td>(2)</td><td>(5)</td></tr>
+            <tr><td>(7)</td><td>if_true</td><td>(6)</td><td>(9)</td></tr>
+            <tr><td>(8)</td><td>goto</td><td>(10)</td><td>—</td></tr>
+            <tr><td>(9)</td><td>=</td><td>y</td><td>1</td></tr>
+            <tr><td>(10)</td><td>=</td><td>y</td><td>0</td></tr>
+          </table>
+        </div>
+        <p><em>Note: In triples, arguments reference other triple indices instead of temporaries.</em></p>
+      </div>
+
+      <div class="answer-block">
+        <h4>Indirect Triples</h4>
+        <p>Same triples table, but add an <strong>instruction pointer array</strong>:</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Ptr Array</th><th>→ Triple</th></tr>
+            <tr><td>[0]</td><td>(0)</td></tr>
+            <tr><td>[1]</td><td>(1)</td></tr>
+            <tr><td>[2]</td><td>(2)</td></tr>
+            <tr><td>[3]</td><td>(3)</td></tr>
+            <tr><td>[4]</td><td>(4)</td></tr>
+            <tr><td>[5]</td><td>(5)</td></tr>
+            <tr><td>[6]</td><td>(6)</td></tr>
+            <tr><td>[7]</td><td>(7)</td></tr>
+            <tr><td>[8]</td><td>(8)</td></tr>
+            <tr><td>[9]</td><td>(9)</td></tr>
+            <tr><td>[10]</td><td>(10)</td></tr>
+          </table>
+        </div>
+        <p><em>Advantage of indirect triples: Reordering instructions (for optimization) only requires changing the pointer array, not the triples themselves.</em></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== MODULE 5 ===================== -->
+<div class="container" id="mod5">
+  <div class="section-divider"></div>
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <h2>Module 5 — Code Optimization</h2>
+  </div>
+
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q11</div>
+      <div class="q-title">
+        <h3>Basic blocks, control flow graph, optimization techniques, and DAG for given code</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 5</span>
+          <span class="tag marks">15 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 1)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Source Three-Address Code</h4>
+        <pre>
+10  k=0
+20  x=n-3
+30  if k&lt;x goto 50
+40  goto 170
+50  s=k-4
+60  z=x+2
+70  h=z
+80  v=h+s
+90  d=m[v]
+100 e=d-2
+110 t=k-4
+120 u=h+t
+130 m[u]=e
+140 k=k+1
+150 x=n-3
+160 if k&lt;x goto 50
+170 ---
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 1 — Identify Basic Blocks</h4>
+        <p>Rules for finding leaders (first instruction of each basic block):</p>
+        <ul>
+          <li>First instruction is a leader</li>
+          <li>Target of a goto is a leader</li>
+          <li>Instruction immediately after a goto/conditional is a leader</li>
+        </ul>
+        <p>Leaders: 10 (first), 50 (target of goto at 30), 40 (after conditional at 30), 170 (target of goto at 40), 50 already marked.</p>
+        <p>After analyzing:</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Block</th><th>Instructions</th><th>Exit</th></tr>
+            <tr><td><strong>B1</strong></td><td>10: k=0<br>20: x=n-3</td><td>conditional at 30</td></tr>
+            <tr><td><strong>B2</strong></td><td>30: if k&lt;x goto 50</td><td>→B3(true), →B4(false)</td></tr>
+            <tr><td><strong>B3</strong></td><td>40: goto 170</td><td>→B5</td></tr>
+            <tr><td><strong>B4 (loop body)</strong></td><td>50: s=k-4<br>60: z=x+2<br>70: h=z<br>80: v=h+s<br>90: d=m[v]<br>100: e=d-2<br>110: t=k-4<br>120: u=h+t<br>130: m[u]=e<br>140: k=k+1<br>150: x=n-3<br>160: if k&lt;x goto 50</td><td>→B4(true), →B5(false)</td></tr>
+            <tr><td><strong>B5</strong></td><td>170: ---</td><td>exit</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Control Flow Graph (CFG)</h4>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 320 340" width="320" height="340">
+            <defs>
+              <marker id="arr2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#2d5a8e"/>
+              </marker>
+            </defs>
+            <!-- B1 -->
+            <rect x="120" y="10" width="80" height="40" rx="6" fill="#e8f0fb" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="160" y="28" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d5a8e">B1</text>
+            <text x="160" y="44" text-anchor="middle" font-size="10" fill="#555">k=0, x=n-3</text>
+            <!-- B2 -->
+            <rect x="120" y="80" width="80" height="40" rx="6" fill="#e8f0fb" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="160" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d5a8e">B2</text>
+            <text x="160" y="113" text-anchor="middle" font-size="10" fill="#555">if k&lt;x</text>
+            <!-- B3 -->
+            <rect x="30" y="160" width="80" height="40" rx="6" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+            <text x="70" y="178" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">B3</text>
+            <text x="70" y="193" text-anchor="middle" font-size="10" fill="#555">goto 170</text>
+            <!-- B4 -->
+            <rect x="210" y="160" width="90" height="40" rx="6" fill="#e8f5e9" stroke="#27ae60" stroke-width="2"/>
+            <text x="255" y="178" text-anchor="middle" font-size="12" font-weight="bold" fill="#1b5e20">B4</text>
+            <text x="255" y="193" text-anchor="middle" font-size="10" fill="#555">loop body</text>
+            <!-- B5 -->
+            <rect x="120" y="280" width="80" height="40" rx="6" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+            <text x="160" y="298" text-anchor="middle" font-size="12" font-weight="bold" fill="#880e4f">B5</text>
+            <text x="160" y="313" text-anchor="middle" font-size="10" fill="#555">170: exit</text>
+            <!-- Arrows -->
+            <line x1="160" y1="50" x2="160" y2="78" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="140" y1="120" x2="90" y2="158" stroke="#ff9800" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <text x="100" y="142" font-size="9" fill="#ff9800">false</text>
+            <line x1="180" y1="120" x2="230" y2="158" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <text x="210" y="142" font-size="9" fill="#27ae60">true</text>
+            <line x1="70" y1="200" x2="140" y2="278" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="255" y1="200" x2="255" y2="240" stroke="#2d5a8e" stroke-width="1.5"/>
+            <path d="M 255 240 Q 310 240 310 200 Q 310 150 280 155" fill="none" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <text x="315" y="205" font-size="9" fill="#27ae60">true</text>
+            <line x1="240" y1="200" x2="180" y2="278" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <text x="195" y="245" font-size="9" fill="#333">false</text>
+          </svg>
+          <figcaption>Control Flow Graph — B4 is the loop body with self-back-edge</figcaption>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 2 — Apply Optimization Techniques to B4</h4>
+        <p><strong>Original B4:</strong></p>
+        <pre>
+50:  s = k - 4
+60:  z = x + 2
+70:  h = z
+80:  v = h + s
+90:  d = m[v]
+100: e = d - 2
+110: t = k - 4
+120: u = h + t
+130: m[u] = e
+140: k = k + 1
+150: x = n - 3
+160: if k &lt; x goto 50
+        </pre>
+
+        <p><strong>Observation 1 — Common Subexpression Elimination (CSE):</strong><br>
+        Line 50: <code>s = k-4</code> and Line 110: <code>t = k-4</code> — same expression! Since k hasn't changed between 50 and 110, <code>t = s</code> (eliminate recomputation).</p>
+
+        <p><strong>Observation 2 — Copy Propagation:</strong><br>
+        Line 70: <code>h = z</code>. Replace all uses of h with z. So Line 80 becomes <code>v = z + s</code>, Line 120 becomes <code>u = z + t</code>.</p>
+
+        <p><strong>Observation 3 — Loop-Invariant Code Motion:</strong><br>
+        Line 60: <code>z = x+2</code> — x doesn't change inside loop body (it changes only at line 150, which is x=n-3, but n is invariant). Actually x IS reassigned at 150, so z is not invariant. However, note that x=n-3 every iteration — this means x is always n-3. So z = (n-3)+2 = n-1, a constant!</p>
+
+        <p><strong>Optimized B4:</strong></p>
+        <pre>
+<span class="cmt">; z = n-1 (computed once, loop-invariant)</span>
+50:  s = k - 4           <span class="cmt">; t = s (CSE eliminates line 110)</span>
+60:  z = x + 2           <span class="cmt">; after copy prop: use z directly</span>
+80:  v = z + s           <span class="cmt">; h replaced with z</span>
+90:  d = m[v]
+100: e = d - 2
+120: u = z + s           <span class="cmt">; t=s, h=z (both CSE + copy prop)</span>
+130: m[u] = e
+140: k = k + 1
+150: x = n - 3
+160: if k &lt; x goto 50
+        </pre>
+        <p>Instructions reduced from 12 to 10. Further: v and u both = z+s (same!), so m[u]=e stores where d was read → one more CSE possible.</p>
+      </div>
+
+      <div class="answer-block">
+        <h4>DAG Representation of B4</h4>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 500 280" width="500" height="280">
+            <!-- Nodes: n, k, 4, 2, 3 as leaves -->
+            <text x="30" y="260" text-anchor="middle" font-size="11" fill="#c0392b">k</text>
+            <text x="80" y="260" text-anchor="middle" font-size="11" fill="#c0392b">4</text>
+            <text x="150" y="260" text-anchor="middle" font-size="11" fill="#c0392b">n</text>
+            <text x="200" y="260" text-anchor="middle" font-size="11" fill="#c0392b">3</text>
+            <text x="280" y="260" text-anchor="middle" font-size="11" fill="#c0392b">2</text>
+            <text x="350" y="260" text-anchor="middle" font-size="11" fill="#c0392b">v</text>
+
+            <!-- s = k-4 -->
+            <circle cx="55" cy="200" r="18" fill="#e8f0fb" stroke="#2d5a8e" stroke-width="1.5"/>
+            <text x="55" y="204" text-anchor="middle" font-size="11" fill="#2d5a8e">-</text>
+            <line x1="30" y1="252" x2="47" y2="218" stroke="#999" stroke-width="1"/>
+            <line x1="80" y1="252" x2="63" y2="218" stroke="#999" stroke-width="1"/>
+            <text x="20" y="210" font-size="9" fill="#27ae60">s,t</text>
+
+            <!-- x = n-3 -->
+            <circle cx="170" cy="200" r="18" fill="#e8f0fb" stroke="#2d5a8e" stroke-width="1.5"/>
+            <text x="170" y="204" text-anchor="middle" font-size="11" fill="#2d5a8e">-</text>
+            <line x1="150" y1="252" x2="162" y2="218" stroke="#999" stroke-width="1"/>
+            <line x1="200" y1="252" x2="178" y2="218" stroke="#999" stroke-width="1"/>
+            <text x="185" y="210" font-size="9" fill="#27ae60">x</text>
+
+            <!-- z = x+2 -->
+            <circle cx="225" cy="150" r="18" fill="#e8f0fb" stroke="#2d5a8e" stroke-width="1.5"/>
+            <text x="225" y="154" text-anchor="middle" font-size="11" fill="#2d5a8e">+</text>
+            <line x1="170" y1="182" x2="215" y2="168" stroke="#999" stroke-width="1"/>
+            <line x1="280" y1="252" x2="233" y2="168" stroke="#999" stroke-width="1"/>
+            <text x="240" y="144" font-size="9" fill="#27ae60">z,h</text>
+
+            <!-- v = z+s = h+s -->
+            <circle cx="130" cy="130" r="18" fill="#fff3e0" stroke="#ff9800" stroke-width="1.5"/>
+            <text x="130" y="134" text-anchor="middle" font-size="11" fill="#e65100">+</text>
+            <line x1="55" y1="182" x2="118" y2="148" stroke="#999" stroke-width="1"/>
+            <line x1="225" y1="132" x2="148" y2="132" stroke="#999" stroke-width="1"/>
+            <text x="95" y="122" font-size="9" fill="#27ae60">v,u</text>
+            <text x="125" y="108" font-size="9" fill="#555">(CSE: v=u)</text>
+
+            <!-- d = m[v] -->
+            <circle cx="130" cy="70" r="18" fill="#e8f5e9" stroke="#27ae60" stroke-width="1.5"/>
+            <text x="130" y="74" text-anchor="middle" font-size="11" fill="#27ae60">m[]</text>
+            <line x1="130" y1="112" x2="130" y2="88" stroke="#999" stroke-width="1"/>
+            <text x="155" y="68" font-size="9" fill="#27ae60">d</text>
+
+            <!-- e = d-2 -->
+            <circle cx="130" cy="25" r="18" fill="#fce4ec" stroke="#e91e63" stroke-width="1.5"/>
+            <text x="130" y="29" text-anchor="middle" font-size="11" fill="#e91e63">-</text>
+            <line x1="130" y1="52" x2="130" y2="43" stroke="#999" stroke-width="1"/>
+            <text x="155" y="23" font-size="9" fill="#27ae60">e</text>
+            <!-- 2 to e node -->
+            <line x1="280" y1="252" x2="140" y2="43" stroke="#999" stroke-width="1" stroke-dasharray="3,2"/>
+          </svg>
+          <figcaption>DAG for B4 — Note CSE: v and u share the same + node (z+s)</figcaption>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code optimization techniques -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q12</div>
+      <div class="q-title">
+        <h3>Describe code optimization techniques with examples: Constant folding, propagation, algebraic simplification, strength reduction, CSE</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 5</span>
+          <span class="tag marks">15 Marks</span>
+          <span class="paper-tag">May 2024</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>1. Constant Folding</h4>
+        <p>Evaluate constant expressions at compile time rather than at runtime.</p>
+        <pre>
+<span class="cmt">// Before:</span>
+x = 3 * 4 + 2;
+y = 365 * 24 * 60 * 60;   <span class="cmt">// seconds in a year</span>
+
+<span class="cmt">// After constant folding:</span>
+x = 14;
+y = 31536000;
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>2. Constant Propagation</h4>
+        <p>Replace variables with their known constant values.</p>
+        <pre>
+<span class="cmt">// Before:</span>
+i = 5;
+j = i * 3;
+k = j - 1;
+
+<span class="cmt">// After constant propagation:</span>
+i = 5;
+j = 15;   <span class="cmt">// i replaced with 5</span>
+k = 14;   <span class="cmt">// j replaced with 15</span>
+
+<span class="cmt">// After dead code elimination (i, j never used again):</span>
+k = 14;
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>3. Algebraic Simplification</h4>
+        <p>Apply mathematical identities to simplify expressions.</p>
+        <pre>
+x = x + 0;    → x = x      (identity for +)
+x = x * 1;    → x = x      (identity for *)
+x = x * 0;    → x = 0      (zero property)
+x = x * 2;    → x = x + x  (if no shift available)
+x = a ** 2;   → x = a * a  (power simplification)
+y = (x * 4) / 2; → y = x * 2  (algebraic cancel)
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>4. Operator Strength Reduction</h4>
+        <p>Replace expensive operations with cheaper equivalents.</p>
+        <pre>
+x * 2   → x &lt;&lt; 1    (shift instead of multiply)
+x * 4   → x &lt;&lt; 2
+x / 2   → x &gt;&gt; 1    (shift instead of divide)
+x ** 2  → x * x      (power→multiply)
+
+<span class="cmt">// In loops — the classic example:</span>
+<span class="cmt">// Before:</span>
+for(i=0; i&lt;10; i++) {
+    a[i] = i * 4;       <span class="cmt">// multiply each iteration</span>
+}
+
+<span class="cmt">// After strength reduction:</span>
+t = 0;
+for(i=0; i&lt;10; i++) {
+    a[i] = t;
+    t = t + 4;          <span class="cmt">// addition replaces multiplication</span>
+}
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>5. Common Subexpression Elimination (CSE)</h4>
+        <p>If the same expression is computed multiple times and operands haven't changed, compute it once and reuse.</p>
+        <pre>
+<span class="cmt">// Before:</span>
+t1 = a + b;
+t2 = a + b;   <span class="cmt">// same expression!</span>
+x = t1 * t2;
+
+<span class="cmt">// After CSE:</span>
+t1 = a + b;
+x = t1 * t1;  <span class="cmt">// t2 eliminated</span>
+
+<span class="cmt">// More complex example:</span>
+<span class="cmt">// Before:</span>
+x = (a+b)/(b-c) - (a+b)*(b-c);
+
+<span class="cmt">// Identify CSEs:</span>
+t1 = a + b;   <span class="cmt">// appears twice</span>
+t2 = b - c;   <span class="cmt">// appears twice</span>
+x = t1/t2 - t1*t2;
+        </pre>
+        <div class="callout tip"><strong>DAG:</strong> CSE is naturally represented in a DAG — identical subexpressions map to the same node, so they're computed once.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== MODULE 6 ===================== -->
+<div class="container" id="mod6">
+  <div class="section-divider"></div>
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <h2>Module 6 — Code Generation</h2>
+  </div>
+
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q13</div>
+      <div class="q-title">
+        <h3>Compute Next-use and liveness, then generate machine code for: x=a+b, t=x-y, g=t+c, h=t/y, u=g+h, v=x*t, w=g+x</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 6</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 1)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Step 1 — Next-Use and Liveness (scan backwards)</h4>
+        <p>Rules: Scan from last instruction to first. Initially all variables are live (or dead depending on what's needed after the block). A variable is <em>live</em> at a point if it's used later in the block. <em>Next-use</em> = next instruction number where the variable is used.</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Stmt</th><th>Code</th><th colspan="2">x</th><th colspan="2">a</th><th colspan="2">b</th><th colspan="2">t</th><th colspan="2">y</th><th colspan="2">g</th><th colspan="2">c</th><th colspan="2">h</th><th colspan="2">u</th><th colspan="2">v</th><th colspan="2">w</th></tr>
+            <tr><th></th><th></th><th>live</th><th>next</th><th>live</th><th>next</th><th>live</th><th>next</th><th>live</th><th>next</th><th>live</th><th>next</th><th>live</th><th>next</th><th>live</th><th>next</th><th>live</th><th>next</th><th>live</th><th>next</th><th>live</th><th>next</th><th>live</th><th>next</th></tr>
+            <tr><td>7</td><td>w=g+x</td><td>Y</td><td>7</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>Y</td><td>7</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>N</td><td>-</td></tr>
+            <tr><td>6</td><td>v=x*t</td><td>Y</td><td>6</td><td>-</td><td>-</td><td>-</td><td>-</td><td>Y</td><td>6</td><td>-</td><td>-</td><td>Y</td><td>7</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td></tr>
+            <tr><td>5</td><td>u=g+h</td><td>Y</td><td>6</td><td>-</td><td>-</td><td>-</td><td>-</td><td>Y</td><td>6</td><td>-</td><td>-</td><td>Y</td><td>5</td><td>-</td><td>-</td><td>Y</td><td>5</td><td>N</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td></tr>
+            <tr><td>4</td><td>h=t/y</td><td>Y</td><td>6</td><td>-</td><td>-</td><td>-</td><td>-</td><td>Y</td><td>4</td><td>Y</td><td>4</td><td>Y</td><td>5</td><td>-</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td></tr>
+            <tr><td>3</td><td>g=t+c</td><td>Y</td><td>6</td><td>-</td><td>-</td><td>-</td><td>-</td><td>Y</td><td>3</td><td>Y</td><td>4</td><td>N</td><td>-</td><td>Y</td><td>3</td><td>N</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td></tr>
+            <tr><td>2</td><td>t=x-y</td><td>Y</td><td>2</td><td>-</td><td>-</td><td>-</td><td>-</td><td>N</td><td>-</td><td>Y</td><td>2</td><td>N</td><td>-</td><td>Y</td><td>3</td><td>N</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td></tr>
+            <tr><td>1</td><td>x=a+b</td><td>N</td><td>-</td><td>Y</td><td>1</td><td>Y</td><td>1</td><td>N</td><td>-</td><td>Y</td><td>2</td><td>N</td><td>-</td><td>Y</td><td>3</td><td>N</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td><td>N</td><td>-</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 2 — Machine Code Generation (3 registers: R0, R1, R2)</h4>
+        <p>Strategy: Use register descriptors (what's in each register) and address descriptors (where each variable lives). Spill least-recently-used variable when all registers are full.</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Stmt</th><th>Machine Code</th><th>Register Descriptor</th><th>Address Descriptor</th></tr>
+            <tr><td>x=a+b</td><td>MOV R0, a<br>ADD R0, b</td><td>R0:x</td><td>x:R0</td></tr>
+            <tr><td>t=x-y</td><td>MOV R1, R0<br>SUB R1, y</td><td>R0:x, R1:t</td><td>x:R0, t:R1</td></tr>
+            <tr><td>g=t+c</td><td>MOV R2, R1<br>ADD R2, c</td><td>R0:x, R1:t, R2:g</td><td>x:R0, t:R1, g:R2</td></tr>
+            <tr><td>h=t/y</td><td><em>All regs full! x has next-use at 6, t at 4, g at 5 — spill x (latest next use)</em><br>MOV x_mem, R0<br>MOV R0, R1<br>DIV R0, y</td><td>R0:h, R1:t, R2:g</td><td>x:mem, t:R1, g:R2, h:R0</td></tr>
+            <tr><td>u=g+h</td><td>MOV R1, R2<br>ADD R1, R0<br><em>(u not live after → store if needed)</em></td><td>R0:h, R1:u, R2:g</td><td>u:R1, g:R2, h:R0</td></tr>
+            <tr><td>v=x*t</td><td>MOV R1, x_mem<br>MUL R1, t_if_avail</td><td>R0:h→v, R1:v, R2:g</td><td>v:R1, g:R2</td></tr>
+            <tr><td>w=g+x</td><td>MOV R0, R2<br>ADD R0, x_mem<br>MOV w, R0</td><td>R0:w, R1:v, R2:g</td><td>w:R0</td></tr>
+          </table>
+        </div>
+        <div class="callout info"><strong>Key Point:</strong> When all registers are full and a new value must be loaded, we spill the register whose variable has the <em>latest</em> next-use (or is dead). Store its value to memory first if needed.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== MODULE 7 ===================== -->
+<div class="container" id="mod7">
+  <div class="section-divider"></div>
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <h2>Module 7 — Parallelism</h2>
+  </div>
+
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q14</div>
+      <div class="q-title">
+        <h3>Instruction Scheduling, Software Pipelining and impact on compilers for parallel processing</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 7</span>
+          <span class="tag marks">10 Marks</span>
+          <span class="paper-tag">Nov 2024 (both sets)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Instruction Scheduling</h4>
+        <p>Modern processors can execute <em>multiple independent instructions</em> simultaneously (superscalar, VLIW). The compiler must <strong>reorder instructions</strong> to maximize parallelism while preserving program semantics.</p>
+        <p><strong>Key concepts:</strong></p>
+        <ul>
+          <li><strong>Dependence graph:</strong> Nodes = instructions; edges = data/control/anti dependencies. Scheduling must respect topological order.</li>
+          <li><strong>Data dependence:</strong> Instruction B reads a value written by instruction A → A must come before B.</li>
+          <li><strong>Anti-dependence (WAR):</strong> B writes a register that A reads → A must come first.</li>
+          <li><strong>Output dependence (WAW):</strong> Both A and B write to same register → order must be maintained.</li>
+          <li><strong>Goal:</strong> Fill pipeline slots by scheduling independent instructions side-by-side.</li>
+        </ul>
+        <pre>
+<span class="cmt">// Before scheduling (sequential, wastes pipeline slots):</span>
+LOAD  R1, a      <span class="cmt">; 3-cycle latency</span>
+ADD   R2, R1, b  <span class="cmt">; stalls 2 cycles waiting for R1</span>
+LOAD  R3, c      <span class="cmt">; 3-cycle latency</span>
+
+<span class="cmt">// After scheduling (interleaved to hide latency):</span>
+LOAD  R1, a      <span class="cmt">; starts cycle 1</span>
+LOAD  R3, c      <span class="cmt">; starts cycle 2 (independent of R1)</span>
+ADD   R2, R1, b  <span class="cmt">; R1 ready by now → no stall</span>
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Software Pipelining</h4>
+        <p>Software pipelining overlaps iterations of a loop so that different loop iterations execute simultaneously — essentially creating a "pipeline" of iterations in software.</p>
+        <p>Technique: <strong>Loop pipelining / Modulo scheduling</strong></p>
+        <pre>
+<span class="cmt">// Original loop:</span>
+for(i=0; i&lt;n; i++) {
+    a[i] = b[i] + c[i];   <span class="cmt">// Load-Add-Store sequence</span>
+}
+<span class="cmt">// Each iteration: LOAD b[i], LOAD c[i], ADD, STORE a[i]</span>
+
+<span class="cmt">// Software pipelined (overlap 3 iterations):</span>
+<span class="cmt">// Prologue: start iterations 1 and 2</span>
+LOAD b[0]; LOAD c[0];              <span class="cmt">; start iter 0</span>
+LOAD b[1]; LOAD c[1]; ADD r0=b0+c0;<span class="cmt">; start iter 1, compute iter 0</span>
+<span class="cmt">// Steady state: all three stages active</span>
+LOAD b[i]; ADD b[i-1]+c[i-1]; STORE a[i-2];
+<span class="cmt">// Epilogue: drain last iterations</span>
+        </pre>
+        <p><strong>Result:</strong> Effective throughput approaches 1 iteration per cycle even though each iteration takes 3 cycles.</p>
+      </div>
+
+      <div class="answer-block">
+        <h4>Impact on Compiler Design</h4>
+        <ul>
+          <li><strong>Code generation phase</strong> must be aware of processor's functional units, latencies, and parallelism capabilities.</li>
+          <li><strong>Register allocation</strong> becomes more complex — live ranges extend across iterations in pipelining.</li>
+          <li><strong>Loop transformations</strong> (unrolling, loop fission, fusion) are applied to expose more parallelism.</li>
+          <li><strong>Dependence analysis</strong> becomes critical — compiler must prove that reordering is safe.</li>
+          <li>Compilers for VLIW/superscalar machines must pack multiple independent operations into a single instruction word.</li>
+        </ul>
+      </div>
+
+      <div class="answer-block">
+        <h4>Automatic Parallelization and Cache Locality</h4>
+        <p><strong>Automatic parallelization:</strong> Compiler detects independent loop iterations and generates parallel code (e.g., OpenMP directives, SIMD code). Challenges: aliasing, pointer analysis, complex data structures (graphs, sparse matrices) make dependence analysis undecidable in general.</p>
+        <p><strong>Cache locality optimization:</strong></p>
+        <ul>
+          <li><strong>Temporal locality:</strong> Access the same data multiple times before it's evicted. Loop restructuring can improve this.</li>
+          <li><strong>Spatial locality:</strong> Access consecutive memory locations. Array traversal order matters (row-major vs column-major).</li>
+          <li><strong>Loop tiling (blocking):</strong> Process data in cache-sized blocks to reduce cache misses.</li>
+        </ul>
+        <pre>
+<span class="cmt">// Poor cache: column-major access in C (row-major language)</span>
+for(j=0; j&lt;N; j++)
+  for(i=0; i&lt;N; i++)
+    A[i][j]++;   <span class="cmt">// jumps by N elements each access</span>
+
+<span class="cmt">// Good cache: row-major access</span>
+for(i=0; i&lt;N; i++)
+  for(j=0; j&lt;N; j++)
+    A[i][j]++;   <span class="cmt">// sequential memory access</span>
+        </pre>
+        <p><strong>Challenges with irregular data structures:</strong> Sparse matrices, graphs have unpredictable access patterns → compilers cannot statically prove locality → dynamic scheduling needed → difficult to parallelise automatically.</p>
+      </div>
+
+      <div class="answer-block">
+        <h4>Design Aspects of Parallel Machines (SIMD, MIMD)</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Architecture</th><th>Description</th><th>Compiler Support</th></tr>
+            <tr><td>SIMD (Single Instruction, Multiple Data)</td><td>One instruction operates on multiple data elements (e.g., SSE/AVX)</td><td>Auto-vectorization, loop vectorizer</td></tr>
+            <tr><td>MIMD (Multiple Instruction, Multiple Data)</td><td>Multiple processors each executing different code on different data</td><td>Parallelization, thread-level analysis</td></tr>
+            <tr><td>VLIW (Very Long Instruction Word)</td><td>Compiler packs multiple ops into one wide instruction</td><td>Instruction scheduling at compile time</td></tr>
+            <tr><td>Superscalar</td><td>Hardware detects independent instructions at runtime</td><td>Compiler still helps with ordering</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== LONG QUESTIONS ===================== -->
+<div class="container" id="long">
+  <div class="section-divider"></div>
+  <div class="section-header">
+    <div class="section-num">★</div>
+    <h2>Long Questions (15 Marks) — SLR & Advanced</h2>
+  </div>
+
+  <!-- SLR Grammar Train -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q15</div>
+      <div class="q-title">
+        <h3>Show grammar is SLR(1), construct parsing table, parse the train string</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 2</span>
+          <span class="tag marks">15 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 2)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Grammar</h4>
+        <pre>
+A     → Train
+TRAIN → DEPARTURE ARRIVAL
+DEPARTURE → "The train departs from" CITY "at" TIME
+ARRIVAL   → "and arrives in" CITY "at" TIME
+CITY  → "Bangalore" | "Mumbai"
+TIME  → "6:00 AM" | "2:00 PM"
+        </pre>
+        <p>Terminals (quoted strings as single tokens): <em>dep</em>="The train departs from", <em>arr</em>="and arrives in", <em>at</em>="at", <em>bg</em>="Bangalore", <em>mb</em>="Mumbai", <em>t1</em>="6:00 AM", <em>t2</em>="2:00 PM"</p>
+        <p>Simplified terminal names:</p>
+        <pre>
+0: A'  → A
+1: A   → TRAIN
+2: TRAIN → DEP ARR
+3: DEP → d CITY a TIME     (d="The train departs from", a="at")
+4: ARR → e CITY a TIME     (e="and arrives in")
+5: CITY → bg
+6: CITY → mb
+7: TIME → t1
+8: TIME → t2
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 1 — LR(0) Canonical Collection (Items)</h4>
+        <h5>I0:</h5>
+        <pre>
+[A'→·A]
+[A→·TRAIN]
+[TRAIN→·DEP ARR]
+[DEP→·d CITY a TIME]
+        </pre>
+        <h5>I1 = goto(I0,A):</h5><pre>[A'→A·] — ACCEPT</pre>
+        <h5>I2 = goto(I0,TRAIN):</h5><pre>[A→TRAIN·]</pre>
+        <h5>I3 = goto(I0,DEP):</h5>
+        <pre>[TRAIN→DEP·ARR]
+[ARR→·e CITY a TIME]</pre>
+        <h5>I4 = goto(I0,d):</h5>
+        <pre>[DEP→d·CITY a TIME]
+[CITY→·bg]
+[CITY→·mb]</pre>
+        <h5>I5 = goto(I4,CITY):</h5><pre>[DEP→d CITY·a TIME]</pre>
+        <h5>I6 = goto(I4,bg):</h5><pre>[CITY→bg·] ← reduce r5</pre>
+        <h5>I7 = goto(I4,mb):</h5><pre>[CITY→mb·] ← reduce r6</pre>
+        <h5>I8 = goto(I5,a):</h5>
+        <pre>[DEP→d CITY a·TIME]
+[TIME→·t1]
+[TIME→·t2]</pre>
+        <h5>I9 = goto(I8,TIME):</h5><pre>[DEP→d CITY a TIME·] ← reduce r3</pre>
+        <h5>I10 = goto(I8,t1):</h5><pre>[TIME→t1·] ← reduce r7</pre>
+        <h5>I11 = goto(I8,t2):</h5><pre>[TIME→t2·] ← reduce r8</pre>
+        <h5>I12 = goto(I3,ARR):</h5><pre>[TRAIN→DEP ARR·] ← reduce r2</pre>
+        <h5>I13 = goto(I3,e):</h5>
+        <pre>[ARR→e·CITY a TIME]
+[CITY→·bg]
+[CITY→·mb]</pre>
+        <p>Continue similarly for ARR states (I14...I18 mirroring DEP structure).</p>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 2 — FOLLOW Sets (for SLR table)</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Non-terminal</th><th>FOLLOW</th></tr>
+            <tr><td>A'</td><td>{$}</td></tr>
+            <tr><td>A</td><td>{$}</td></tr>
+            <tr><td>TRAIN</td><td>{$}</td></tr>
+            <tr><td>DEP</td><td>{e} (= "and arrives in")</td></tr>
+            <tr><td>ARR</td><td>{$}</td></tr>
+            <tr><td>CITY</td><td>{a} (= "at")</td></tr>
+            <tr><td>TIME</td><td>{$, e}</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>SLR(1) Parsing Table (Key Entries)</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>State</th><th>d</th><th>e</th><th>a</th><th>bg</th><th>mb</th><th>t1</th><th>t2</th><th>$</th><th>A</th><th>TRAIN</th><th>DEP</th><th>ARR</th><th>CITY</th><th>TIME</th></tr>
+            <tr><td>0</td><td>s4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>1</td><td>2</td><td>3</td><td></td><td></td><td></td></tr>
+            <tr><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>acc</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>r1</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>3</td><td></td><td>s13</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>12</td><td></td><td></td></tr>
+            <tr><td>4</td><td></td><td></td><td></td><td>s6</td><td>s7</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>5</td><td></td></tr>
+            <tr><td>5</td><td></td><td></td><td>s8</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>6</td><td></td><td></td><td>r5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>7</td><td></td><td></td><td>r6</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>8</td><td></td><td></td><td></td><td></td><td></td><td>s10</td><td>s11</td><td></td><td></td><td></td><td></td><td></td><td></td><td>9</td></tr>
+            <tr><td>9</td><td></td><td>r3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>10</td><td></td><td>r7</td><td></td><td></td><td></td><td></td><td></td><td>r7</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>11</td><td></td><td>r8</td><td></td><td></td><td></td><td></td><td></td><td>r8</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>12</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>r2</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          </table>
+        </div>
+        <div class="callout tip"><strong>SLR(1) is valid</strong> when no cell has more than one entry. Here there are no conflicts → the grammar IS SLR(1). ✓</div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Parse String: "The train departs from Bangalore at 6:00 AM and arrives in Mumbai at 2:00 PM"</h4>
+        <p>Token stream: <code>d bg a t1 e mb a t2 $</code></p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Stack</th><th>Input</th><th>Action</th></tr>
+            <tr><td>0</td><td>d bg a t1 e mb a t2 $</td><td>shift d → 4</td></tr>
+            <tr><td>0 d 4</td><td>bg a t1 e mb a t2 $</td><td>shift bg → 6</td></tr>
+            <tr><td>0 d 4 bg 6</td><td>a t1 e mb a t2 $</td><td>r5: CITY→bg, goto(4,CITY)=5</td></tr>
+            <tr><td>0 d 4 CITY 5</td><td>a t1 e mb a t2 $</td><td>shift a → 8</td></tr>
+            <tr><td>0 d 4 CITY 5 a 8</td><td>t1 e mb a t2 $</td><td>shift t1 → 10</td></tr>
+            <tr><td>0 d 4 CITY 5 a 8 t1 10</td><td>e mb a t2 $</td><td>r7: TIME→t1, goto(8,TIME)=9</td></tr>
+            <tr><td>0 d 4 CITY 5 a 8 TIME 9</td><td>e mb a t2 $</td><td>r3: DEP→d CITY a TIME, goto(0,DEP)=3</td></tr>
+            <tr><td>0 DEP 3</td><td>e mb a t2 $</td><td>shift e → 13</td></tr>
+            <tr><td>0 DEP 3 e 13</td><td>mb a t2 $</td><td>shift mb → (CITY=mb state)</td></tr>
+            <tr><td>...</td><td>a t2 $</td><td>r6: CITY→mb, shift a, shift t2</td></tr>
+            <tr><td>...</td><td>$</td><td>r8: TIME→t2, r4: ARR→e CITY a TIME, goto(3,ARR)=12</td></tr>
+            <tr><td>0 DEP 3 ARR 12</td><td>$</td><td>r2: TRAIN→DEP ARR, goto(0,TRAIN)=2</td></tr>
+            <tr><td>0 TRAIN 2</td><td>$</td><td>r1: A→TRAIN, goto(0,A)=1</td></tr>
+            <tr><td>0 A 1</td><td>$</td><td><strong>ACCEPT ✓</strong></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q16 Basic blocks + dominator tree from Nov 2024 Set 2 -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q16</div>
+      <div class="q-title">
+        <h3>Basic blocks, CFG, optimization, dominator tree for 3-address code</h3>
+        <div class="q-meta">
+          <span class="tag module">Module 5</span>
+          <span class="tag marks">15 Marks</span>
+          <span class="paper-tag">Nov 2024 (both sets)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Three-Address Code (from Set 2)</h4>
+        <pre>
+i.   a = 10
+ii.  b = 20
+iii. t1 = a + b
+iv.  if t1 > 15 goto L1
+v.   d = a / b
+vi.  e = d + t1
+vii. goto L2
+viii.L1: d = a * b
+ix.  e = d - t1
+x.   L2: return 0
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Step 1 — Identify Basic Blocks</h4>
+        <p>Leaders: i (first), L1 (target of goto at iv), v (after conditional at iv), L2 (target of goto at vii), viii=L1 (already marked).</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Block</th><th>Instructions</th></tr>
+            <tr><td><strong>B1</strong></td><td>i: a=10, ii: b=20, iii: t1=a+b, iv: if t1>15 goto L1</td></tr>
+            <tr><td><strong>B2</strong></td><td>v: d=a/b, vi: e=d+t1, vii: goto L2</td></tr>
+            <tr><td><strong>B3 (L1:)</strong></td><td>viii: d=a*b, ix: e=d-t1</td></tr>
+            <tr><td><strong>B4 (L2:)</strong></td><td>x: return 0</td></tr>
+          </table>
+        </div>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 340 240" width="340" height="240">
+            <defs><marker id="arr3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2d5a8e"/></marker></defs>
+            <!-- B1 -->
+            <rect x="120" y="10" width="90" height="50" rx="6" fill="#e8f0fb" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="165" y="30" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d5a8e">B1</text>
+            <text x="165" y="48" text-anchor="middle" font-size="9" fill="#555">a=10,b=20,t1=a+b</text>
+            <text x="165" y="58" text-anchor="middle" font-size="9" fill="#555">if t1&gt;15 goto L1</text>
+            <!-- B2 -->
+            <rect x="30" y="100" width="90" height="50" rx="6" fill="#e8f5e9" stroke="#27ae60" stroke-width="2"/>
+            <text x="75" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#1b5e20">B2</text>
+            <text x="75" y="137" text-anchor="middle" font-size="9" fill="#555">d=a/b, e=d+t1</text>
+            <text x="75" y="147" text-anchor="middle" font-size="9" fill="#555">goto L2</text>
+            <!-- B3 -->
+            <rect x="210" y="100" width="90" height="50" rx="6" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+            <text x="255" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">B3(L1)</text>
+            <text x="255" y="137" text-anchor="middle" font-size="9" fill="#555">d=a*b</text>
+            <text x="255" y="147" text-anchor="middle" font-size="9" fill="#555">e=d-t1</text>
+            <!-- B4 -->
+            <rect x="120" y="190" width="90" height="40" rx="6" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+            <text x="165" y="210" text-anchor="middle" font-size="12" font-weight="bold" fill="#880e4f">B4(L2)</text>
+            <text x="165" y="225" text-anchor="middle" font-size="9" fill="#555">return 0</text>
+            <!-- Arrows -->
+            <line x1="145" y1="60" x2="95" y2="98" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arr3)"/>
+            <text x="110" y="82" font-size="9" fill="#27ae60">false</text>
+            <line x1="185" y1="60" x2="235" y2="98" stroke="#ff9800" stroke-width="1.5" marker-end="url(#arr3)"/>
+            <text x="218" y="82" font-size="9" fill="#ff9800">true</text>
+            <line x1="75" y1="150" x2="145" y2="188" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr3)"/>
+            <line x1="255" y1="150" x2="185" y2="188" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr3)"/>
+          </svg>
+          <figcaption>CFG: B1→B2(false) or B1→B3(true); both→B4</figcaption>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Optimized Basic Blocks</h4>
+        <p><strong>B1 — Constant Folding + Constant Propagation:</strong></p>
+        <pre>
+<span class="cmt">// a=10, b=20 are constants</span>
+i.   a = 10
+ii.  b = 20
+iii. t1 = 30       <span class="cmt">; 10+20=30 (constant folding)</span>
+iv.  goto L1       <span class="cmt">; t1=30 > 15 is always true! (constant propagation)</span>
+                   <span class="cmt">; So B2 is DEAD CODE — never reached!</span>
+        </pre>
+        <p><strong>B2 — DEAD CODE (can be eliminated entirely)</strong></p>
+        <p><strong>B3 — Constant propagation:</strong></p>
+        <pre>
+viii. d = 200      <span class="cmt">; a*b = 10*20 = 200 (constant folding)</span>
+ix.   e = 170      <span class="cmt">; d-t1 = 200-30 = 170</span>
+        </pre>
+        <p><strong>Final optimized code:</strong></p>
+        <pre>
+a = 10
+b = 20
+t1 = 30
+d = 200
+e = 170
+return 0
+        </pre>
+      </div>
+
+      <div class="answer-block">
+        <h4>Dominator Tree</h4>
+        <p><strong>Dominators:</strong> Node d dominates node n if every path from entry to n passes through d.</p>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Node</th><th>Dominators (Dom set)</th></tr>
+            <tr><td>B1</td><td>{B1}</td></tr>
+            <tr><td>B2</td><td>{B1, B2}</td></tr>
+            <tr><td>B3</td><td>{B1, B3}</td></tr>
+            <tr><td>B4</td><td>{B1, B4}</td></tr>
+          </table>
+        </div>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 200 160" width="200" height="160">
+            <defs><marker id="arr4" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2d5a8e"/></marker></defs>
+            <rect x="75" y="10" width="50" height="30" rx="5" fill="#e8f0fb" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="100" y="30" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d5a8e">B1</text>
+            <line x1="80" y1="40" x2="50" y2="78" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr4)"/>
+            <line x1="100" y1="40" x2="100" y2="78" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr4)"/>
+            <line x1="120" y1="40" x2="150" y2="78" stroke="#2d5a8e" stroke-width="1.5" marker-end="url(#arr4)"/>
+            <rect x="25" y="80" width="50" height="30" rx="5" fill="#e8f5e9" stroke="#27ae60" stroke-width="2"/>
+            <text x="50" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#27ae60">B2</text>
+            <rect x="75" y="80" width="50" height="30" rx="5" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+            <text x="100" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#e91e63">B4</text>
+            <rect x="125" y="80" width="50" height="30" rx="5" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+            <text x="150" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">B3</text>
+          </svg>
+          <figcaption>Dominator tree: B1 dominates all; B4 is dominated directly by B1</figcaption>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAG for x = ((a+b)/(b-c)) - (a+b)*(b-c) -->
+  <div class="q-card">
+    <div class="q-header" onclick="toggle(this)">
+      <div class="q-num">Q17</div>
+      <div class="q-title">
+        <h3>Construct DAG and optimal target code for: <code>x = ((a+b)/(b-c)) - (a+b)*(b-c)</code></h3>
+        <div class="q-meta">
+          <span class="tag module">Module 5</span>
+          <span class="tag marks">7 Marks</span>
+          <span class="paper-tag">Nov 2024 (Set 2)</span>
+        </div>
+      </div>
+      <div class="q-toggle">▼</div>
+    </div>
+    <div class="q-body">
+      <div class="answer-block">
+        <h4>Identify Common Subexpressions</h4>
+        <p>Expression: <code>x = ((a+b)/(b-c)) - (a+b)*(b-c)</code></p>
+        <ul>
+          <li><code>(a+b)</code> appears <strong>twice</strong> → CSE node n1</li>
+          <li><code>(b-c)</code> appears <strong>twice</strong> → CSE node n2</li>
+          <li><code>n1/n2</code> → node n3</li>
+          <li><code>n1*n2</code> → node n4</li>
+          <li><code>n3-n4</code> → node n5 (= x)</li>
+        </ul>
+      </div>
+
+      <div class="answer-block">
+        <h4>DAG Construction</h4>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 400 280" width="400" height="280">
+            <defs><marker id="arr5" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2d5a8e"/></marker></defs>
+            <!-- Leaf nodes -->
+            <text x="70" y="260" text-anchor="middle" font-size="13" font-weight="bold" fill="#c0392b">a</text>
+            <text x="140" y="260" text-anchor="middle" font-size="13" font-weight="bold" fill="#c0392b">b</text>
+            <text x="210" y="260" text-anchor="middle" font-size="13" font-weight="bold" fill="#c0392b">b</text>
+            <text x="280" y="260" text-anchor="middle" font-size="13" font-weight="bold" fill="#c0392b">c</text>
+            <text x="105" y="275" text-anchor="middle" font-size="9" fill="#999">(shared)</text>
+
+            <!-- n1: a+b -->
+            <circle cx="105" cy="190" r="22" fill="#e8f0fb" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="105" y="187" text-anchor="middle" font-size="11" font-weight="bold" fill="#2d5a8e">+</text>
+            <text x="105" y="201" text-anchor="middle" font-size="9" fill="#2d5a8e">n1</text>
+            <line x1="70" y1="251" x2="92" y2="212" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+            <line x1="140" y1="251" x2="118" y2="212" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+            <text x="68" y="188" font-size="9" fill="#27ae60">(a+b)</text>
+
+            <!-- n2: b-c -->
+            <circle cx="245" cy="190" r="22" fill="#e8f0fb" stroke="#2d5a8e" stroke-width="2"/>
+            <text x="245" y="187" text-anchor="middle" font-size="11" font-weight="bold" fill="#2d5a8e">-</text>
+            <text x="245" y="201" text-anchor="middle" font-size="9" fill="#2d5a8e">n2</text>
+            <line x1="210" y1="251" x2="232" y2="212" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+            <line x1="280" y1="251" x2="258" y2="212" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+            <text x="258" y="188" font-size="9" fill="#27ae60">(b-c)</text>
+
+            <!-- n3: n1/n2 -->
+            <circle cx="140" cy="110" r="22" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+            <text x="140" y="107" text-anchor="middle" font-size="11" font-weight="bold" fill="#e65100">÷</text>
+            <text x="140" y="121" text-anchor="middle" font-size="9" fill="#e65100">n3</text>
+            <line x1="105" y1="168" x2="128" y2="132" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+            <line x1="245" y1="168" x2="152" y2="132" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+            <!-- n4: n1*n2 -->
+            <circle cx="250" cy="110" r="22" fill="#e8f5e9" stroke="#27ae60" stroke-width="2"/>
+            <text x="250" y="107" text-anchor="middle" font-size="11" font-weight="bold" fill="#27ae60">×</text>
+            <text x="250" y="121" text-anchor="middle" font-size="9" fill="#27ae60">n4</text>
+            <line x1="105" y1="168" x2="238" y2="132" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+            <line x1="245" y1="168" x2="250" y2="132" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+            <!-- n5: n3-n4 = x -->
+            <circle cx="195" cy="40" r="22" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+            <text x="195" y="37" text-anchor="middle" font-size="11" font-weight="bold" fill="#e91e63">-</text>
+            <text x="195" y="51" text-anchor="middle" font-size="9" fill="#e91e63">x</text>
+            <line x1="140" y1="88" x2="182" y2="62" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+            <line x1="250" y1="88" x2="208" y2="62" stroke="#666" stroke-width="1.5" marker-end="url(#arr5)"/>
+          </svg>
+          <figcaption>DAG — n1=(a+b) and n2=(b-c) are shared nodes (computed once each)</figcaption>
+        </div>
+      </div>
+
+      <div class="answer-block">
+        <h4>Optimal Target Code from DAG</h4>
+        <pre>
+MOV  R0, a        <span class="cmt">; R0 = a</span>
+ADD  R0, b        <span class="cmt">; R0 = a+b  (n1)</span>
+MOV  R1, b
+SUB  R1, c        <span class="cmt">; R1 = b-c  (n2)</span>
+MOV  R2, R0
+DIV  R2, R1       <span class="cmt">; R2 = (a+b)/(b-c)  (n3)</span>
+MUL  R0, R1       <span class="cmt">; R0 = (a+b)*(b-c)  (n4) — reuse n1 in R0</span>
+SUB  R2, R0       <span class="cmt">; R2 = n3-n4  (n5)</span>
+MOV  x, R2        <span class="cmt">; x = result</span>
+        </pre>
+        <p><strong>Without DAG (naive):</strong> Would compute (a+b) twice and (b-c) twice = 8 instructions + 2 loads extra. DAG eliminates the redundancy → <strong>more efficient code</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div style="background:var(--accent); color:white; padding:2rem; text-align:center; margin-top:3rem;">
+  <p style="font-family:'Crimson Pro',serif; font-size:1.3rem; margin-bottom:0.5rem;">Compiler Design — BCSE307L</p>
+  <p style="opacity:0.8; font-size:0.85rem;">VIT University · FAT Preparation Guide · Based on Nov/Dec 2024, July/Aug 2023, May 2024 papers</p>
+  <p style="opacity:0.6; font-size:0.75rem; margin-top:0.5rem;">All answers based on Aho, Lam, Sethi & Ullman "Dragon Book" principles</p>
+</div>
+
+<script>
+function toggle(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+
+// Smooth nav highlighting
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('nav a');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.remove('active');
+    if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+  });
+});
+
+// Open first card of each section by default
+document.querySelectorAll('.q-card').forEach((card, i) => {
+  if (i === 0) card.classList.add('open');
+});
+
+// Smooth scroll
+document.querySelectorAll('nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+</body>
+</html>
